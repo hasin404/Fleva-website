@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account — FLEVA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Permanent+Marker&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .account-card{ max-width:480px; margin:0 auto; background:var(--cream-soft); border-radius:var(--radius-lg); padding:40px; text-align:center; }
+  .avatar{ width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg,var(--pink),var(--plum)); margin:0 auto 18px; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:1.6rem; color:#fff; }
+  .account-row{ display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--line); text-align:left; font-size:0.9rem; }
+  .account-row b{ color:var(--ink-soft); font-weight:600; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a href="index.html" class="logo">FLEVA</a>
+    <nav class="nav-main"><a href="shop.html">Shop</a><a href="about.html">Our Story</a></nav>
+    <div class="header-icons">
+      <a href="checkout.html" class="icon-btn" aria-label="Cart">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="cart-count" data-cart-count>0</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<section class="section">
+  <div class="wrap" id="account-root"></div>
+</section>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-bottom" style="border-top:0;padding-top:0;">
+      <span class="footer-copy">© 2026 FLEVA. All rights reserved.</span>
+      <div class="footer-social"><a href="#">IG</a><a href="#">TT</a><a href="#">YT</a></div>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+<script>
+  const root = document.getElementById('account-root');
+  const user = getUser();
+  if(!user){
+    root.innerHTML = `
+      <div class="account-card">
+        <h1 style="font-size:1.6rem;margin-bottom:10px;">You're not logged in</h1>
+        <p style="color:var(--ink-soft);margin-bottom:24px;">Log in or create an account to see your rewards and orders.</p>
+        <a href="login.html" class="btn btn-primary" style="justify-content:center;">Log in <span class="btn-dot">→</span></a>
+      </div>`;
+  } else {
+    root.innerHTML = `
+      <div class="account-card">
+        <div class="avatar">${user.name.charAt(0).toUpperCase()}</div>
+        <h1 style="font-size:1.6rem;margin-bottom:4px;">Hey, ${user.name}</h1>
+        <p style="color:var(--ink-soft);margin-bottom:24px;font-size:0.85rem;">Welcome to the Fleva fam.</p>
+        <div class="account-row"><b>Email</b><span>${user.email}</span></div>
+        <div class="account-row"><b>Rewards points</b><span>0</span></div>
+        <div class="account-row"><b>Orders</b><span>0</span></div>
+        <button class="btn btn-outline btn-block" style="margin-top:24px;" id="logout-btn">Log out</button>
+      </div>`;
+    document.getElementById('logout-btn').onclick = () => { logOut(); location.reload(); };
+  }
+</script>
+</body>
+</html>
