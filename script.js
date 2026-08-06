@@ -72,7 +72,7 @@ const PRODUCTS = [
     tag: "6 SNACKS INSIDE",
     color: "#16140F",
     accent: "var(--lime)",
-    image: "",
+    image: "assets/products/gift-boxes.png",
     desc: "A curated box of our six favourites. Built for gifting, dangerously easy to keep for yourself.",
   },
 ];
