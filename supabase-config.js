@@ -6,8 +6,8 @@
    control what it's allowed to do.
    ========================================================================== */
 
-const SUPABASE_URL = "https://rswyecotckqxzcshketf.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_pv9ZZTQeAiimOKSBF96__g_akak-6m8";
+const SUPABASE_URL = "https://wajsqtsyloiiohnydfnp.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_6lJRcLJuChQSH-G3__MTwQ_QWlW54nf";
 
 if(SUPABASE_URL.includes("PASTE_") || SUPABASE_ANON_KEY.includes("PASTE_")){
   console.warn("FLEVA: Supabase isn't configured yet — open supabase-config.js and paste in your Project URL and anon key from Supabase → Settings → API.");
