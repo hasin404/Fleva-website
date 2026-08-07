@@ -9,7 +9,7 @@ const jwt = require('jsonwebtoken');
 const generateAccessToken = (userId) => {
   return jwt.sign(
     { id: userId },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET || 'fleva_dev_jwt_secret_change_in_production',
     { expiresIn: process.env.JWT_EXPIRE || '15m' }
   );
 };
@@ -20,7 +20,7 @@ const generateAccessToken = (userId) => {
 const generateRefreshToken = (userId) => {
   return jwt.sign(
     { id: userId },
-    process.env.JWT_REFRESH_SECRET,
+    process.env.JWT_REFRESH_SECRET || 'fleva_dev_refresh_secret_change_in_production',
     { expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d' }
   );
 };
