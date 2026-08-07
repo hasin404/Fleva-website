@@ -127,18 +127,30 @@ app.get('*', (req, res, next) => {
 /* ---------- Error handler (must be last) ---------- */
 app.use(errorHandler);
 
-/* ---------- Start server ---------- */
-const PORT = process.env.PORT || 5000;
-
-const startServer = async () => {
-  await connectDB();
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n🚀 FLEVA server running on http://localhost:${PORT}`);
-    console.log(`   API: http://localhost:${PORT}/api/v1`);
-    console.log(`   Frontend: http://localhost:${PORT}`);
-    console.log(`   Admin: http://localhost:${PORT}/admin`);
-    console.log(`   Environment: ${process.env.NODE_ENV || 'development'}\n`);
+/* ---------- Export app / Start server ---------- */
+if (process.env.VERCEL) {
+  // On Vercel serverless, lazily ensure DB connection on incoming requests
+  app.use(async (req, res, next) => {
+    try {
+      await connectDB();
+      next();
+    } catch (err) {
+      next(err);
+    }
   });
-};
+} else {
+  const PORT = process.env.PORT || 5000;
+  const startServer = async () => {
+    await connectDB();
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`\n🚀 FLEVA server running on http://localhost:${PORT}`);
+      console.log(`   API: http://localhost:${PORT}/api/v1`);
+      console.log(`   Frontend: http://localhost:${PORT}`);
+      console.log(`   Admin: http://localhost:${PORT}/admin`);
+      console.log(`   Environment: ${process.env.NODE_ENV || 'development'}\n`);
+    });
+  };
+  startServer();
+}
 
-startServer();
+module.exports = app;
