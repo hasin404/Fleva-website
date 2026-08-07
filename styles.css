@@ -266,21 +266,20 @@ input,select,textarea{ font-family:inherit; font-size:1rem; }
   margin: 0 auto;
 }
 
-/* Dynamic Ambient Product Color Glow */
+/* Dynamic Ambient Product Color Glow (Pushed deep into 3D background) */
 .hero-ambient-glow {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 76%;
+  transform: translate3d(-50%, -50%, -300px);
+  width: 86%;
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 46, 119, 0.42) 0%, rgba(224, 24, 98, 0.14) 50%, transparent 72%);
   filter: blur(45px);
   pointer-events: none;
-  z-index: 1;
-  transition: background 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-              transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 0;
+  transition: background 0.85s cubic-bezier(0.22, 1, 0.36, 1);
   opacity: 0.9;
 }
 
