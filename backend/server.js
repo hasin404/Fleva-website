@@ -44,9 +44,21 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5000',
+  origin: true,
   credentials: true,
 }));
+
+// Automatic DB connection middleware for serverless API routes
+app.use(async (req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    try {
+      await connectDB();
+    } catch (err) {
+      return res.status(500).json({ success: false, message: 'Database connection error: ' + err.message });
+    }
+  }
+  next();
+});
 
 app.use(mongoSanitize()); // Prevent NoSQL injection
 
