@@ -334,17 +334,17 @@ input,select,textarea{ font-family:inherit; font-size:1rem; }
 
 /* Position 2: Right Background Stage */
 .carousel-3d-card.pos-right-back {
-  transform: translate3d(42%, 4%, -160px) scale(0.72) rotate(6deg);
-  opacity: 0.65;
-  filter: blur(0.5px) brightness(0.88);
+  transform: translate3d(62%, 4%, -120px) scale(0.78) rotate(7deg);
+  opacity: 0.85;
+  filter: brightness(0.92);
   z-index: 5;
 }
 
 /* Position 3: Left Background Stage */
 .carousel-3d-card.pos-left-back {
-  transform: translate3d(-42%, 6%, -160px) scale(0.72) rotate(-6deg);
-  opacity: 0.65;
-  filter: blur(0.5px) brightness(0.88);
+  transform: translate3d(-62%, 6%, -120px) scale(0.78) rotate(-7deg);
+  opacity: 0.85;
+  filter: brightness(0.92);
   z-index: 5;
 }
 
