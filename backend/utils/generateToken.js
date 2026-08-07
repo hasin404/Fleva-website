@@ -3,13 +3,17 @@
    ========================================================================== */
 const jwt = require('jsonwebtoken');
 
+const getJwtSecret = () => (process.env.JWT_SECRET && process.env.JWT_SECRET.trim()) ? process.env.JWT_SECRET : 'fleva_dev_jwt_secret_change_in_production';
+const getJwtRefreshSecret = () => (process.env.JWT_REFRESH_SECRET && process.env.JWT_REFRESH_SECRET.trim()) ? process.env.JWT_REFRESH_SECRET : 'fleva_dev_refresh_secret_change_in_production';
+
 /**
  * Generate a short-lived access token.
  */
 const generateAccessToken = (userId) => {
+  const idStr = (userId && userId._id) ? userId._id.toString() : String(userId);
   return jwt.sign(
-    { id: userId },
-    process.env.JWT_SECRET || 'fleva_dev_jwt_secret_change_in_production',
+    { id: idStr },
+    getJwtSecret(),
     { expiresIn: process.env.JWT_EXPIRE || '15m' }
   );
 };
@@ -18,9 +22,10 @@ const generateAccessToken = (userId) => {
  * Generate a long-lived refresh token.
  */
 const generateRefreshToken = (userId) => {
+  const idStr = (userId && userId._id) ? userId._id.toString() : String(userId);
   return jwt.sign(
-    { id: userId },
-    process.env.JWT_REFRESH_SECRET || 'fleva_dev_refresh_secret_change_in_production',
+    { id: idStr },
+    getJwtRefreshSecret(),
     { expiresIn: process.env.JWT_REFRESH_EXPIRE || '7d' }
   );
 };

@@ -4,6 +4,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const getJwtSecret = () => (process.env.JWT_SECRET && process.env.JWT_SECRET.trim()) ? process.env.JWT_SECRET : 'fleva_dev_jwt_secret_change_in_production';
+
 /**
  * Protect routes — requires a valid JWT access token.
  * Attaches req.user with the full user document.
@@ -22,8 +24,7 @@ const protect = async (req, res, next) => {
     }
 
     // Verify token
-    const secret = process.env.JWT_SECRET || 'fleva_dev_jwt_secret_change_in_production';
-    const decoded = jwt.verify(token, secret);
+    const decoded = jwt.verify(token, getJwtSecret());
 
     // Get user from DB
     const user = await User.findById(decoded.id);
