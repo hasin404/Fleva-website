@@ -849,5 +849,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadBanners();
   window.dispatchEvent(new CustomEvent('products-loaded'));
   document.dispatchEvent(new CustomEvent('products-loaded'));
+  if (typeof initShop === 'function') initShop();
+  if (typeof renderFeatured === 'function') renderFeatured();
 });
 

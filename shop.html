@@ -96,9 +96,12 @@
 <script src="script.js"></script>
 <script>
   function initShop() {
-    const categories = ["All", ...new Set(PRODUCTS.map(p=>p.category))];
+    if (!window.PRODUCTS || !PRODUCTS.length) return;
+    const categories = ["All", ...new Set(PRODUCTS.map(p=>p.category).filter(Boolean))];
     const filterBar = document.getElementById('filter-bar');
-    filterBar.innerHTML = categories.map((c,i)=>`<button class="filter-chip ${i===0?'active':''}" data-filter="${c}">${c}</button>`).join('');
+    if (filterBar) {
+      filterBar.innerHTML = categories.map((c,i)=>`<button class="filter-chip ${i===0?'active':''}" data-filter="${c}">${c}</button>`).join('');
+    }
 
     const params = new URLSearchParams(window.location.search);
     const query = params.get('q') ? params.get('q').toLowerCase() : '';
@@ -107,30 +110,37 @@
       let list = filter === "All" ? PRODUCTS : PRODUCTS.filter(p=>p.category===filter);
       
       if (query) {
-        list = list.filter(p => p.name.toLowerCase().includes(query) || (p.desc && p.desc.toLowerCase().includes(query)) || (p.tag && p.tag.toLowerCase().includes(query)));
-        document.querySelector('.page-hero h1').innerHTML = `Search: <span>"${params.get('q')}"</span>`;
-        document.querySelector('.page-hero .eyebrow').textContent = "Results";
+        list = list.filter(p => (p.name && p.name.toLowerCase().includes(query)) || (p.desc && p.desc.toLowerCase().includes(query)) || (p.tag && p.tag.toLowerCase().includes(query)));
+        const heroTitle = document.querySelector('.page-hero h1');
+        const heroEyebrow = document.querySelector('.page-hero .eyebrow');
+        if (heroTitle) heroTitle.innerHTML = `Search: <span>"${params.get('q')}"</span>`;
+        if (heroEyebrow) heroEyebrow.textContent = "Results";
       }
 
-      document.getElementById('shop-grid').innerHTML = list.map(renderProductCard).join('');
-      document.getElementById('result-count').textContent = `${list.length} product${list.length!==1?'s':''}`;
+      const shopGrid = document.getElementById('shop-grid');
+      const resultCount = document.getElementById('result-count');
+      if (shopGrid) shopGrid.innerHTML = list.map(renderProductCard).join('');
+      if (resultCount) resultCount.textContent = `${list.length} product${list.length!==1?'s':''}`;
     }
 
-    const currentFilter = filterBar.querySelector('.filter-chip.active')?.dataset.filter || 'All';
+    const currentFilter = filterBar ? (filterBar.querySelector('.filter-chip.active')?.dataset.filter || 'All') : 'All';
     render(currentFilter);
 
-    filterBar.addEventListener('click', e=>{
-      const btn = e.target.closest('.filter-chip');
-      if(!btn) return;
-      filterBar.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
-      btn.classList.add('active');
-      render(btn.dataset.filter);
-    });
+    if (filterBar) {
+      filterBar.onclick = (e) => {
+        const btn = e.target.closest('.filter-chip');
+        if(!btn) return;
+        filterBar.querySelectorAll('.filter-chip').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        render(btn.dataset.filter);
+      };
+    }
   }
 
-  // Init immediately with static data, re-init when API data arrives
   initShop();
   window.addEventListener('products-loaded', initShop);
+  document.addEventListener('products-loaded', initShop);
+  document.addEventListener('DOMContentLoaded', initShop);
 </script>
 <script src="chat-widget.js"></script>
 </body>
