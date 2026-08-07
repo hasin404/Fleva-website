@@ -8,8 +8,10 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null };
 }
 
+const MONGODB_ATLAS_DEFAULT = 'mongodb+srv://abrar420240_db_user:NaLRCSO6gYnXORtG@fleva.bg54fva.mongodb.net/fleva?retryWrites=true&w=majority';
+
 const connectDB = async () => {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/fleva';
+  const uri = process.env.MONGODB_URI || (process.env.VERCEL ? MONGODB_ATLAS_DEFAULT : 'mongodb://localhost:27017/fleva');
 
   if (cached.conn) {
     return cached.conn;
