@@ -25,12 +25,54 @@
   .terms{ font-size:0.78rem; color:var(--ink-soft); margin-bottom:22px; display:flex; gap:8px; align-items:flex-start; }
   .terms input{ margin-top:3px; }
   .auth-visual{
-    flex:1; background:var(--ink); color:var(--cream); display:flex; align-items:center; justify-content:center;
+    flex:1; background:var(--ink); color:var(--cream); display:flex; flex-direction:column; align-items:center; justify-content:center;
     position:relative; overflow:hidden; padding:40px;
   }
   .auth-visual h2{ font-family:var(--font-mark); text-transform:none; font-size:2.4rem; text-align:center; line-height:1.2; position:relative; z-index:2; }
   .auth-visual h2 b{ color:var(--lime); }
   .auth-visual .blob{ position:absolute; width:60%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,#3a2418,transparent 70%); top:-10%; right:-10%; }
+
+  /* Interactive Eye Tracking Component */
+  .eyes-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    margin-top: 36px;
+    position: relative;
+    z-index: 5;
+  }
+  .eye {
+    width: 76px;
+    height: 76px;
+    background: #FFFFFF;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45), inset 0 3px 6px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+  .pupil {
+    width: 34px;
+    height: 34px;
+    background: #16140F;
+    border-radius: 50%;
+    position: absolute;
+    transition: transform 0.04s ease-out;
+    pointer-events: none;
+  }
+  .pupil::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 9px;
+    height: 9px;
+    background: #FFFFFF;
+    border-radius: 50%;
+  }
   @media (max-width:860px){ .auth-visual{ display:none; } }
 </style>
 </head>
@@ -89,6 +131,11 @@
   <div class="auth-visual">
     <div class="blob"></div>
     <h2>2,000+ snackers<br>already living<br><b>Fleva.</b></h2>
+    <!-- Interactive Cursor Tracking Eyes -->
+    <div class="eyes-container" id="eyes-container">
+      <div class="eye"><div class="pupil"></div></div>
+      <div class="eye"><div class="pupil"></div></div>
+    </div>
   </div>
 </div>
 
@@ -143,6 +190,33 @@
       submitBtn.innerHTML = 'Create account <span class="btn-dot">→</span>';
     }
   });
+  // Interactive Eye Tracking Logic
+  const eyes = document.querySelectorAll('.eye');
+  const pupils = document.querySelectorAll('.pupil');
+
+  if (eyes.length && pupils.length) {
+    document.addEventListener('mousemove', (e) => {
+      eyes.forEach((eye, index) => {
+        const rect = eye.getBoundingClientRect();
+        const eyeCenterX = rect.left + rect.width / 2;
+        const eyeCenterY = rect.top + rect.height / 2;
+
+        const dx = e.clientX - eyeCenterX;
+        const dy = e.clientY - eyeCenterY;
+        const angle = Math.atan2(dy, dx);
+
+        const maxDistance = 18; // Max travel radius for pupils
+        const distance = Math.min(maxDistance, Math.hypot(dx, dy) / 10);
+
+        const pupilX = Math.cos(angle) * distance;
+        const pupilY = Math.sin(angle) * distance;
+
+        if (pupils[index]) {
+          pupils[index].style.transform = `translate(${pupilX}px, ${pupilY}px)`;
+        }
+      });
+    });
+  }
 </script>
 </body>
 </html>
