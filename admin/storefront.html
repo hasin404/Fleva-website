@@ -333,22 +333,31 @@
       formData.append('heroBtnLink', document.getElementById('hero-btn-link').value);
       formData.append('deliveryFee', document.getElementById('delivery-fee').value);
 
-      const img1 = document.getElementById('hero-img-1') ? document.getElementById('hero-img-1').files[0] : document.querySelector('input[name="heroImage1"]').files[0];
-      const img2 = document.getElementById('hero-img-2') ? document.getElementById('hero-img-2').files[0] : document.querySelector('input[name="heroImage2"]').files[0];
+      const getFile = (selector) => {
+        try {
+          const el = document.querySelector(selector) || document.getElementById(selector);
+          return (el && el.files && el.files[0]) ? el.files[0] : null;
+        } catch (e) {
+          return null;
+        }
+      };
+
+      const img1 = getFile('input[name="heroImage1"]') || getFile('hero-img-1');
+      const img2 = getFile('input[name="heroImage2"]') || getFile('hero-img-2');
       if (img1) formData.append('heroImage1', img1);
       if (img2) formData.append('heroImage2', img2);
 
-      const ci1 = document.querySelector('input[name="cravingImg1"]').files[0];
-      const ci2 = document.querySelector('input[name="cravingImg2"]').files[0];
-      const ci3 = document.querySelector('input[name="cravingImg3"]').files[0];
-      const ciMain = document.querySelector('input[name="cravingImgMain"]').files[0];
+      const ci1 = getFile('input[name="cravingImg1"]');
+      const ci2 = getFile('input[name="cravingImg2"]');
+      const ci3 = getFile('input[name="cravingImg3"]');
+      const ciMain = getFile('input[name="cravingImgMain"]');
       if (ci1) formData.append('cravingImg1', ci1);
       if (ci2) formData.append('cravingImg2', ci2);
       if (ci3) formData.append('cravingImg3', ci3);
       if (ciMain) formData.append('cravingImgMain', ciMain);
 
       for (let i = 1; i <= 7; i++) {
-        const hf = document.querySelector(`input[name="heroFloat${i}"]`).files[0];
+        const hf = getFile(`input[name="heroFloat${i}"]`);
         if (hf) formData.append(`heroFloat${i}`, hf);
       }
 
