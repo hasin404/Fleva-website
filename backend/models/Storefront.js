@@ -14,6 +14,10 @@ const StorefrontSchema = new mongoose.Schema({
     type: String,
     default: 'assets/hero/can-front.png'
   },
+  heroImage3: {
+    type: String,
+    default: 'assets/hero/fruit-chips.png'
+  },
   cravingImg1: { type: String, default: 'assets/craving/product-1.png' },
   cravingImg2: { type: String, default: 'assets/craving/product-2.png' },
   cravingImg3: { type: String, default: 'assets/craving/product-3.png' },

@@ -72,15 +72,23 @@
         <h3>Hero Images</h3>
         <div class="form-row">
           <div class="field">
-            <label>Left Image (Pouch)</label>
-            <input type="file" id="hero-img-1" accept="image/*" onchange="previewImage(this, 'preview-1')">
-            <div class="img-preview"><img id="preview-1" src="" alt="Left Image Preview"></div>
+            <label>Product 1 (Pouch Front)</label>
+            <input type="file" id="hero-img-1" name="heroImage1" accept="image/*" onchange="previewImage(this, 'preview-1')">
+            <div class="img-preview"><img id="preview-1" src="" alt="Product 1 Preview"></div>
           </div>
           <div class="field">
-            <label>Right Image (Can)</label>
-            <input type="file" id="hero-img-2" accept="image/*" onchange="previewImage(this, 'preview-2')">
-            <div class="img-preview"><img id="preview-2" src="" alt="Right Image Preview"></div>
+            <label>Product 2 (Can Front)</label>
+            <input type="file" id="hero-img-2" name="heroImage2" accept="image/*" onchange="previewImage(this, 'preview-2')">
+            <div class="img-preview"><img id="preview-2" src="" alt="Product 2 Preview"></div>
           </div>
+        </div>
+        <div class="form-row" style="margin-top: 15px;">
+          <div class="field">
+            <label>Product 3 (Fruit Chips / Pack)</label>
+            <input type="file" id="hero-img-3" name="heroImage3" accept="image/*" onchange="previewImage(this, 'preview-3')">
+            <div class="img-preview"><img id="preview-3" src="" alt="Product 3 Preview"></div>
+          </div>
+          <div></div>
         </div>
       </div>
 
@@ -267,6 +275,7 @@
         const formatImg = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
         if (data.storefront.heroImage1) document.getElementById('preview-1').src = formatImg(data.storefront.heroImage1);
         if (data.storefront.heroImage2) document.getElementById('preview-2').src = formatImg(data.storefront.heroImage2);
+        if (data.storefront.heroImage3) document.getElementById('preview-3').src = formatImg(data.storefront.heroImage3);
         
         if (data.storefront.cravingImg1) document.getElementById('preview-craving-1').src = formatImg(data.storefront.cravingImg1);
         if (data.storefront.cravingImg2) document.getElementById('preview-craving-2').src = formatImg(data.storefront.cravingImg2);
@@ -386,8 +395,10 @@
 
       const img1 = await getFile('input[name="heroImage1"]') || await getFile('hero-img-1');
       const img2 = await getFile('input[name="heroImage2"]') || await getFile('hero-img-2');
+      const img3 = await getFile('input[name="heroImage3"]') || await getFile('hero-img-3');
       if (img1) formData.append('heroImage1', img1);
       if (img2) formData.append('heroImage2', img2);
+      if (img3) formData.append('heroImage3', img3);
 
       const ci1 = await getFile('input[name="cravingImg1"]');
       const ci2 = await getFile('input[name="cravingImg2"]');

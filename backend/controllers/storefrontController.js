@@ -99,6 +99,10 @@ exports.updateStorefront = async (req, res, next) => {
         const result = await saveFileLocally(req.files.heroImage2[0]);
         data.heroImage2 = result.secure_url;
       }
+      if (req.files.heroImage3 && req.files.heroImage3[0]) {
+        const result = await saveFileLocally(req.files.heroImage3[0]);
+        data.heroImage3 = result.secure_url;
+      }
       if (req.files.cravingImg1) {
         const result = await saveFileLocally(req.files.cravingImg1[0]);
         data.cravingImg1 = result.secure_url;

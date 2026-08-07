@@ -15,6 +15,7 @@ router.put('/',
   upload.fields([
     { name: 'heroImage1', maxCount: 1 }, 
     { name: 'heroImage2', maxCount: 1 },
+    { name: 'heroImage3', maxCount: 1 },
     { name: 'cravingImg1', maxCount: 1 },
     { name: 'cravingImg2', maxCount: 1 },
     { name: 'cravingImg3', maxCount: 1 },

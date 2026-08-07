@@ -170,8 +170,10 @@ async function loadStorefront() {
         // Hero Main Pack Images
         const hImg1 = document.getElementById('hero-img-1');
         const hImg2 = document.getElementById('hero-img-2');
+        const hImg3 = document.getElementById('hero-img-3');
         if (hImg1 && STOREFRONT.heroImage1) hImg1.src = formatUrl(STOREFRONT.heroImage1);
         if (hImg2 && STOREFRONT.heroImage2) hImg2.src = formatUrl(STOREFRONT.heroImage2);
+        if (hImg3 && STOREFRONT.heroImage3) hImg3.src = formatUrl(STOREFRONT.heroImage3);
 
         // Hero Floating Fruits
         const floatContainer = document.getElementById('hero-floating-container');
