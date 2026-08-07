@@ -264,6 +264,7 @@ async function loadProducts() {
         PRODUCTS = data.products.map(p => ({
           id: p.slug || p._id,
           _id: p._id,
+          slug: p.slug || p._id,
           name: p.title,
           category: p.categoryName || '',
           price: p.price,
@@ -341,16 +342,23 @@ function getCart() { return getLocalCart(); }
 
 function saveCart(cart) { saveLocalCart(cart); }
 
+function findProduct(id) {
+  if (!id || !PRODUCTS || !PRODUCTS.length) return null;
+  const sId = String(id);
+  return PRODUCTS.find(p => String(p.id) === sId || String(p._id) === sId || String(p.slug) === sId) || null;
+}
+
 function addToCart(id, qty = 1) {
   const cart = getCart();
-  const existing = cart.find(i => i.id === id);
+  const targetId = String(id);
+  const existing = cart.find(i => String(i.id) === targetId);
   if (existing) { existing.qty += qty; }
-  else { cart.push({ id, qty }); }
+  else { cart.push({ id: targetId, qty }); }
   saveCart(cart);
 
   // Sync to server if logged in
   if (_accessToken) {
-    const product = PRODUCTS.find(p => p.id === id);
+    const product = findProduct(id);
     if (product && product._id) {
       apiFetch(`${API_BASE}/cart`, {
         method: 'POST',
@@ -359,14 +367,15 @@ function addToCart(id, qty = 1) {
     }
   }
 
-  showToast("Added to cart");
+  showToast("Added to cart 🛒");
 }
 
 function removeFromCart(id) {
-  saveCart(getCart().filter(i => i.id !== id));
+  const targetId = String(id);
+  saveCart(getCart().filter(i => String(i.id) !== targetId));
 
   if (_accessToken) {
-    const product = PRODUCTS.find(p => p.id === id);
+    const product = findProduct(id);
     if (product && product._id) {
       apiFetch(`${API_BASE}/cart/${product._id}`, { method: 'DELETE' }).catch(() => {});
     }
@@ -375,7 +384,8 @@ function removeFromCart(id) {
 
 function setQty(id, qty) {
   const cart = getCart();
-  const item = cart.find(i => i.id === id);
+  const targetId = String(id);
+  const item = cart.find(i => String(i.id) === targetId);
   if (!item) return;
   item.qty = Math.max(1, qty);
   saveCart(cart);
@@ -387,16 +397,16 @@ function cartCount() {
 
 function cartTotal() {
   return getCart().reduce((sum, i) => {
-    const p = PRODUCTS.find(p => p.id === i.id);
+    const p = findProduct(i.id);
     return sum + (p ? p.price * i.qty : 0);
   }, 0);
 }
 
 function updateCartBadge() {
-  document.querySelectorAll("[data-cart-count]").forEach(el => {
-    const n = cartCount();
+  const n = cartCount();
+  document.querySelectorAll("[data-cart-count], #cart-badge, .cart-count, .badge-count").forEach(el => {
     el.textContent = n;
-    el.style.display = n > 0 ? "flex" : "none";
+    el.style.display = n > 0 ? "inline-flex" : "none";
   });
 }
 

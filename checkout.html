@@ -166,7 +166,7 @@
       document.getElementById('place-order').disabled = true;
     } else {
       container.innerHTML = cart.map(item => {
-        const p = PRODUCTS.find(x => x.id === item.id);
+        const p = typeof findProduct === 'function' ? findProduct(item.id) : PRODUCTS.find(x => x.id === item.id || x._id === item.id || x.slug === item.id);
         if(!p) return '';
         return `
         <div class="cart-line">
@@ -221,7 +221,7 @@
 
     const cart = getCart();
     const hasPreOrder = cart.some(item => {
-      const p = PRODUCTS.find(x => x.id === item.id);
+      const p = typeof findProduct === 'function' ? findProduct(item.id) : PRODUCTS.find(x => x.id === item.id || x._id === item.id || x.slug === item.id);
       return p && p.availability === 'pre-order';
     });
 
@@ -229,7 +229,7 @@
     if (hasPreOrder && total > 0) {
       let advanceAmt = 0;
       for (const item of cart) {
-        const p = PRODUCTS.find(x => x.id === item.id);
+        const p = typeof findProduct === 'function' ? findProduct(item.id) : PRODUCTS.find(x => x.id === item.id || x._id === item.id || x.slug === item.id);
         if (p && p.availability === 'pre-order') {
           const pct = p.advancePaymentPercentage !== undefined ? p.advancePaymentPercentage : 20;
           advanceAmt += (p.price * item.qty) * (pct / 100);
@@ -302,7 +302,7 @@
 
     // Build order payload
     const items = cart.map(item => {
-      const p = PRODUCTS.find(x => x.id === item.id);
+      const p = typeof findProduct === 'function' ? findProduct(item.id) : PRODUCTS.find(x => x.id === item.id || x._id === item.id || x.slug === item.id);
       return { product: p?._id || item.id, qty: item.qty };
     });
 
