@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products — FLEVA Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .product-form-overlay {
+    position: fixed; inset: 0; background: rgba(22,20,15,0.6); z-index: 100;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .product-form-overlay.open { display: flex; }
+  .product-form-card {
+    background: var(--cream); border-radius: var(--radius-lg); padding: 32px;
+    width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto;
+  }
+  .product-form-card h2 { font-size: 1.2rem; margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-actions { display: flex; gap: 12px; margin-top: 20px; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px; }
+  .toolbar input { padding: 10px 16px; border: 2px solid var(--line); border-radius: var(--radius-pill); background: var(--cream-soft); width: 260px; }
+  .toolbar input:focus { border-color: var(--ink); outline: none; }
+  .product-thumb { width: 40px; height: 40px; border-radius: 8px; background: var(--cream-soft); object-fit: cover; }
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar"></div>
+  <main class="admin-main">
+    <div class="admin-header">
+      <div class="header-left"><button class="admin-mobile-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">☰</button><h1>Products</h1></div>
+      <div class="header-right">
+        <div class="date" id="current-date"></div>
+        <div id="header-user"></div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <input type="text" id="search-input" placeholder="Search products…">
+      <button class="btn-admin-primary" style="width:auto;padding:10px 24px;" onclick="openForm()">+ Add Product</button>
+    </div>
+
+    <div class="data-section">
+      <div class="table-responsive"><table class="data-table">
+        <thead><tr><th></th><th>Title</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="product-list"></tbody>
+      </table></div>
+      <div id="pagination" style="display:flex;gap:8px;justify-content:center;padding-top:16px;"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Product Form Modal -->
+<div class="product-form-overlay" id="product-form-overlay">
+  <div class="product-form-card">
+    <h2 id="form-title">Add Product</h2>
+    <form id="product-form" novalidate>
+      <input type="hidden" id="product-id">
+      <div class="field"><label>Title</label><input id="p-title" required></div>
+      <div class="field"><label>Description</label><textarea id="p-desc" rows="3" style="width:100%;padding:12px;border:2px solid var(--line);border-radius:var(--radius-sm);background:var(--cream-soft);resize:vertical;"></textarea></div>
+      <div class="form-row">
+        <div class="field"><label>Price (৳)</label><input type="number" id="p-price" min="0" required></div>
+        <div class="field"><label>Discount Price</label><input type="number" id="p-discount" min="0"></div>
+      </div>
+      <div class="field"><label>Product Image</label><input type="file" id="p-image" accept="image/*" style="border:2px solid var(--line); border-radius:var(--radius-sm); padding:6px; background:var(--white);"></div>
+      <div class="form-row">
+        <div class="field"><label>Category</label><input id="p-category"></div>
+        <div class="field"><label>Brand</label><input id="p-brand" value="FLEVA"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Availability</label>
+          <select id="p-availability" style="width:100%;padding:14px 16px;border:2px solid var(--line);border-radius:var(--radius-sm);background:var(--cream-soft);">
+            <option value="in-stock">In Stock</option>
+            <option value="out-of-stock">Out of Stock</option>
+            <option value="pre-order">Pre-Order</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="hidden">Hidden</option>
+          </select>
+        </div>
+        <div class="field"><label>Stock</label><input type="number" id="p-stock" min="0" value="100"></div>
+      </div>
+      <div class="form-row" id="advance-payment-row" style="display: none;">
+        <div class="field"><label>Advance Payment (%)</label><input type="number" id="p-advance-payment" min="0" max="100" value="20"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>SKU</label><input id="p-sku"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Tags (comma separated)</label><input id="p-tags" placeholder="fruit, healthy"></div>
+        <div class="field"><label>Tag Label</label><input id="p-tag" placeholder="e.g. 100% REAL"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Color</label><input type="color" id="p-color" value="#16140F" style="height:40px;"></div>
+        <div class="field" style="display:flex;gap:16px;align-items:end;padding-bottom:4px;">
+          <label style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="p-featured" style="width:auto;"> Featured</label>
+          <label style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="p-bestseller" style="width:auto;"> Best Seller</label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-admin-primary" style="width:auto;padding:12px 28px;">Save Product</button>
+        <button type="button" class="btn-sm" onclick="closeForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+  if (!requireAdmin()) throw new Error('Not admin');
+  document.getElementById('sidebar').innerHTML = renderSidebar();
+  document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  let currentPage = 1;
+
+  async function loadProducts(page = 1, search = '') {
+    currentPage = page;
+    try {
+      let url = `${API_BASE}/products?page=${page}&limit=15&admin=true`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      const res = await adminFetch(url);
+      const data = await res.json();
+
+      document.getElementById('product-list').innerHTML = data.products.length
+        ? data.products.map(p => `<tr>
+            <td><img class="product-thumb" src="${p.images?.[0]?.url || '/assets/products/protein-bars.png'}" alt="" onerror="this.style.display='none'"></td>
+            <td><strong>${p.title}</strong></td>
+            <td>${p.categoryName || '—'}</td>
+            <td>৳${p.price}</td>
+            <td>${p.stock}</td>
+            <td>${statusBadge(p.availability)}</td>
+            <td>
+              <button class="btn-sm" onclick="editProduct('${p._id}')">Edit</button>
+              <button class="btn-sm danger" onclick="deleteProduct('${p._id}', '${p.title.replace(/'/g, "\\'")}')">Delete</button>
+            </td>
+          </tr>`).join('')
+        : '<tr><td colspan="7" style="text-align:center;color:var(--ink-soft)">No products found</td></tr>';
+
+      // Pagination
+      let paginationHtml = '';
+      for (let i = 1; i <= data.pages; i++) {
+        paginationHtml += `<button class="btn-sm ${i === data.page ? 'style="background:var(--ink);color:var(--cream)"' : ''}" onclick="loadProducts(${i})">${i}</button>`;
+      }
+      document.getElementById('pagination').innerHTML = paginationHtml;
+    } catch (err) {
+      document.getElementById('product-list').innerHTML = '<tr><td colspan="7" style="color:var(--red)">Failed to load products</td></tr>';
+    }
+  }
+
+  // Search
+  let searchTimer;
+  document.getElementById('search-input').addEventListener('input', (e) => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => loadProducts(1, e.target.value), 400);
+  });
+
+  document.getElementById('p-availability').addEventListener('change', e => {
+    const advanceRow = document.getElementById('advance-payment-row');
+    if (e.target.value === 'pre-order') {
+      advanceRow.style.display = 'flex';
+    } else {
+      advanceRow.style.display = 'none';
+    }
+  });
+
+  function openForm(product = null) {
+    document.getElementById('form-title').textContent = product ? 'Edit Product' : 'Add Product';
+    document.getElementById('product-id').value = product?._id || '';
+    document.getElementById('p-title').value = product?.title || '';
+    document.getElementById('p-desc').value = product?.description || '';
+    document.getElementById('p-price').value = product?.price || '';
+    document.getElementById('p-image').value = '';
+    document.getElementById('p-discount').value = product?.discountPrice || '';
+    document.getElementById('p-category').value = product?.categoryName || '';
+    document.getElementById('p-brand').value = product?.brand || 'FLEVA';
+    document.getElementById('p-availability').value = product?.availability || 'in-stock';
+    document.getElementById('p-stock').value = product?.stock ?? 100;
+    document.getElementById('p-advance-payment').value = product?.advancePaymentPercentage ?? 20;
+    document.getElementById('p-sku').value = product?.sku || '';
+    document.getElementById('p-tags').value = (product?.tags || []).join(', ');
+    document.getElementById('p-tag').value = product?.tag || '';
+    document.getElementById('p-color').value = product?.color || '#16140F';
+    document.getElementById('p-featured').checked = product?.isFeatured || false;
+    document.getElementById('p-bestseller').checked = product?.isBestSeller || false;
+    
+    // Trigger availability change to show/hide advance payment row
+    document.getElementById('p-availability').dispatchEvent(new Event('change'));
+
+    document.getElementById('product-form-overlay').classList.add('open');
+  }
+
+  function closeForm() {
+    document.getElementById('product-form-overlay').classList.remove('open');
+  }
+
+  async function editProduct(id) {
+    const res = await adminFetch(`${API_BASE}/products/${id}`);
+    const data = await res.json();
+    if (data.product) openForm(data.product);
+  }
+
+  async function deleteProduct(id, title) {
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    await adminFetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
+    loadProducts(currentPage);
+  }
+
+  document.getElementById('product-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('product-id').value;
+    
+    const formData = new FormData();
+    formData.append('title', document.getElementById('p-title').value);
+    formData.append('description', document.getElementById('p-desc').value);
+    formData.append('price', document.getElementById('p-price').value);
+    formData.append('discountPrice', document.getElementById('p-discount').value || 0);
+    formData.append('categoryName', document.getElementById('p-category').value);
+    formData.append('brand', document.getElementById('p-brand').value);
+    formData.append('availability', document.getElementById('p-availability').value);
+    formData.append('stock', document.getElementById('p-stock').value);
+    formData.append('advancePaymentPercentage', document.getElementById('p-advance-payment').value);
+    formData.append('sku', document.getElementById('p-sku').value);
+    formData.append('tags', document.getElementById('p-tags').value.split(',').map(t => t.trim()).filter(Boolean).join(','));
+    formData.append('tag', document.getElementById('p-tag').value);
+    formData.append('color', document.getElementById('p-color').value);
+    formData.append('isFeatured', document.getElementById('p-featured').checked);
+    formData.append('isBestSeller', document.getElementById('p-bestseller').checked);
+
+    const imageFile = document.getElementById('p-image').files[0];
+    if (imageFile) {
+      formData.append('image', imageFile);
+    }
+
+    const url = id ? `${API_BASE}/products/${id}` : `${API_BASE}/products`;
+    const method = id ? 'PUT' : 'POST';
+
+    const res = await adminFetch(url, { method, body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      closeForm();
+      loadProducts(currentPage);
+    } else {
+      alert(data.message || 'Failed to save product');
+    }
+  });
+
+  loadProducts();
+</script>
+</body>
+</html>

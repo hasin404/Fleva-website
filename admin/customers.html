@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customers — FLEVA Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .form-overlay {
+    position: fixed; inset: 0; background: rgba(22,20,15,0.6); z-index: 9999;
+    display: flex; justify-content: flex-end;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+  }
+  .form-overlay.open { opacity: 1; pointer-events: auto; }
+  .form-modal {
+    background: var(--cream); width: 100%; max-width: 440px; height: 100%;
+    padding: 32px; box-shadow: -6px 0 30px rgba(0,0,0,0.15); border-left: 3px solid var(--ink);
+    transform: translateX(100%); transition: transform 0.3s ease;
+    overflow-y: auto; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .form-overlay.open .form-modal { transform: translateX(0); }
+  .form-row { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-weight: 700; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink); }
+  .field input, .field select { padding: 12px 14px; border: 2px solid var(--line); border-radius: var(--radius-sm); background: var(--white); font-family: inherit; font-size: 1rem; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--ink); }
+  .form-actions { display: flex; gap: 12px; margin-top: 32px; }
+</style>
+</head>
+<body>
+<div class="admin-layout" id="admin-root">
+  <div id="sidebar"></div>
+  <main class="admin-main">
+    <div class="admin-header">
+      <div class="header-left"><button class="admin-mobile-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">☰</button><h1>Customers</h1></div>
+      <div class="header-right">
+        <div style="display:flex;gap:12px;">
+          <input type="text" id="search-input" placeholder="Search customers..." style="padding:12px;border:1px solid var(--line);border-radius:var(--radius-sm);width:250px;">
+          <button class="btn-admin-primary" onclick="loadCustomers(1, document.getElementById('search-input').value)">Search</button>
+        </div>
+        <div id="header-user"></div>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <div class="table-responsive"><table class="data-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>DOB</th>
+            <th>Role</th>
+            <th>Reward Points</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="customer-list">
+          <tr><td colspan="10" style="text-align:center;color:var(--ink-soft);padding:40px;">Loading...</td></tr>
+        </tbody>
+      </table></div>
+      <div class="pagination" id="pagination" style="display:flex;gap:8px;margin-top:24px;justify-content:center;"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Edit Form Overlay -->
+<div class="form-overlay" id="form-overlay">
+  <div class="form-modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+      <h2 id="form-title">Edit Customer</h2>
+      <button class="btn-sm" onclick="closeForm()">Close</button>
+    </div>
+    <form id="customer-form">
+      <input type="hidden" id="customer-id">
+      <div class="form-row">
+        <div class="field"><label>Role</label>
+          <select id="c-role" style="padding:12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--white);">
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Superadmin</option>
+          </select>
+        </div>
+        <div class="field"><label>Reward Points</label><input type="number" id="c-points" min="0"></div>
+      </div>
+      <div class="field" style="margin-top:16px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="c-locked"> Account Locked
+        </label>
+      </div>
+      <div class="form-actions" style="margin-top:24px;">
+        <button type="submit" class="btn-admin-primary" style="width:auto;padding:12px 28px;">Save Customer</button>
+        <button type="button" class="btn-sm" onclick="closeForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+  if (!requireAdmin()) throw new Error('Not admin');
+  document.getElementById('sidebar').innerHTML = renderSidebar('customers');
+
+  let currentPage = 1;
+
+  async function loadCustomers(page = 1, search = '') {
+    currentPage = page;
+    try {
+      const res = await adminFetch(`${API_BASE}/admin/customers?page=${page}&limit=15&search=${encodeURIComponent(search)}`);
+      const data = await res.json();
+      
+      const users = data.users || [];
+      document.getElementById('customer-list').innerHTML = users.length
+        ? users.map(u => `<tr>
+            <td style="font-family:var(--font-mono);font-size:0.8rem;">${u.customerId || '—'}</td>
+            <td><strong>${u.name || '—'}</strong></td>
+            <td>${u.email}</td>
+            <td>${u.phone || '—'}</td>
+            <td>${u.dob ? new Date(u.dob).toLocaleDateString() : '—'}</td>
+            <td style="text-transform:capitalize;">${u.role}</td>
+            <td>${u.rewardPoints || 0}</td>
+            <td>${u.isLocked ? '<span class="badge badge-cancelled">Locked</span>' : '<span class="badge badge-delivered">Active</span>'}</td>
+            <td>${formatDate(u.createdAt)}</td>
+            <td>
+              <button class="btn-sm" onclick="editCustomer('${u._id}')">Edit</button>
+            </td>
+          </tr>`).join('')
+        : '<tr><td colspan="10" style="text-align:center;color:var(--ink-soft)">No customers found</td></tr>';
+
+      let paginationHtml = '';
+      for (let i = 1; i <= data.pages; i++) {
+        paginationHtml += `<button class="btn-sm" onclick="loadCustomers(${i}, '${search}')" ${i === data.page ? 'style="background:var(--ink);color:var(--cream)"' : ''}>${i}</button>`;
+      }
+      document.getElementById('pagination').innerHTML = paginationHtml;
+
+    } catch (err) {
+      document.getElementById('customer-list').innerHTML = '<tr><td colspan="10" style="color:var(--red)">Failed to load customers</td></tr>';
+    }
+  }
+
+  function openForm(user) {
+    document.getElementById('customer-id').value = user._id;
+    document.getElementById('c-role').value = user.role;
+    document.getElementById('c-points').value = user.rewardPoints || 0;
+    document.getElementById('c-locked').checked = user.isLocked;
+    document.getElementById('form-overlay').classList.add('open');
+  }
+
+  function closeForm() {
+    document.getElementById('form-overlay').classList.remove('open');
+  }
+
+  async function editCustomer(id) {
+    const res = await adminFetch(`${API_BASE}/admin/customers/${id}`);
+    const data = await res.json();
+    if (data.user) openForm(data.user);
+  }
+
+  document.getElementById('customer-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('customer-id').value;
+    const body = {
+      role: document.getElementById('c-role').value,
+      rewardPoints: Number(document.getElementById('c-points').value),
+      isLocked: document.getElementById('c-locked').checked
+    };
+
+    await adminFetch(`${API_BASE}/admin/customers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body)
+    });
+    
+    closeForm();
+    loadCustomers(currentPage, document.getElementById('search-input').value);
+  });
+
+  loadCustomers();
+</script>
+</body>
+</html>

@@ -13,6 +13,10 @@
   /* ---- Home-only styles ---- */
   .hero{ padding:28px 0 0; overflow:hidden; }
   .hero-grid{ display:grid; grid-template-columns: 0.85fr 1.15fr; gap:24px; align-items:center; }
+  @media (max-width: 940px) {
+    .hero-grid{ grid-template-columns: 1fr; text-align: center; gap: 12px; }
+    .hero-grid > div:first-child { display: flex; flex-direction: column; align-items: center; }
+  }
   .hero-badge{
     display:inline-flex; align-items:center; gap:10px; background:var(--white); border-radius:var(--radius-pill);
     padding:6px 16px 6px 6px; font-size:0.78rem; font-weight:600; margin-bottom:28px; box-shadow:0 4px 14px rgba(0,0,0,0.06);
@@ -23,9 +27,9 @@
     background:linear-gradient(135deg,var(--pink),var(--plum));
   }
   .hero-badge .avatars span:first-child{ margin-left:0; }
-  .hero h1{ font-size:clamp(2.6rem,5.4vw,4.4rem); line-height:0.98; margin-bottom:20px; }
+  .hero h1{ font-size:clamp(2.6rem, 10vw, 4.4rem); line-height:0.98; margin-bottom:20px; }
   .hero h1 .stroke{ font-family:var(--font-mark); text-transform:none; color:var(--pink); display:block; font-size:1.15em; line-height:1; margin-top:4px; }
-  .hero p.lede{ max-width:360px; font-size:1.05rem; color:var(--ink-soft); margin-bottom:32px; }
+  .hero p.lede{ max-width:360px; font-size:clamp(0.95rem, 3vw, 1.05rem); color:var(--ink-soft); margin-bottom:32px; }
   .hero-dots{ display:flex; flex-direction:column; gap:10px; margin:36px 0; }
   .hero-dots span{ width:8px; height:8px; border-radius:50%; background:var(--line); }
   .hero-dots span.active{ background:var(--ink); width:12px; height:12px; }
@@ -80,7 +84,11 @@
     display:grid; grid-template-columns:0.8fr 1.2fr; gap:40px; align-items:center; position:relative; overflow:hidden;
   }
   @media (max-width:1340px){ .craving{ margin:0 18px; } }
-  .craving h2{ font-family:var(--font-mark); text-transform:none; font-size:clamp(2rem,4vw,3rem); line-height:1.05; color:var(--cream); }
+  @media (max-width:940px) { 
+    .craving{ grid-template-columns: 1fr; padding: 40px 24px; text-align: center; gap: 24px; }
+    .craving-choices{ max-width: 400px; margin: 0 auto; }
+  }
+  .craving h2{ font-family:var(--font-mark); text-transform:none; font-size:clamp(2.4rem, 8vw, 3.2rem); line-height:0.95; margin-bottom:24px; color:var(--cream); }
   .craving h2 u{ text-decoration-color:var(--lime); text-decoration-thickness:4px; }
   .craving-choices{ display:flex; flex-direction:column; gap:12px; margin-top:28px; max-width:280px; }
   .craving-choices button{
@@ -126,10 +134,8 @@
   <div class="wrap">
     <a href="index.html" class="logo">FLEVA</a>
     <nav class="nav-main">
-      <a href="shop.html" class="active">Shop</a>
-      <a href="shop.html">Explore</a>
+      <a href="shop.html">Shop</a>
       <a href="about.html">Our Story</a>
-      <a href="shop.html">Fleva World</a>
       <a href="account.html">Rewards</a>
     </nav>
     <div class="header-icons">
@@ -156,9 +162,7 @@
     <button class="close-btn" aria-label="Close menu">✕</button>
   </div>
   <a href="shop.html">Shop</a>
-  <a href="shop.html">Explore</a>
   <a href="about.html">Our Story</a>
-  <a href="shop.html">Fleva World</a>
   <a href="account.html">Rewards</a>
 </div>
 
@@ -170,28 +174,25 @@
         <span class="avatars"><span></span><span></span><span></span></span>
         Loved by 2SK+ Fleva Fam
       </div>
-      <h1>Real fruits.<br>Crazy good.<span class="stroke">Fleva.</span></h1>
-      <p class="lede">From snacking to sharing, we make healthy feel insanely delicious.</p>
-      <a href="shop.html" class="btn btn-primary">Explore now <span class="btn-dot">→</span></a>
+      <h1 id="hero-title">Real fruits.<br>Crazy good.<span class="stroke">Fleva.</span></h1>
+      <p id="hero-lede" class="lede">From snacking to sharing, we make healthy feel insanely delicious.</p>
+      <a id="hero-btn" href="shop.html" class="btn btn-primary">Explore now <span class="btn-dot">→</span></a>
       <div class="scroll-cue"><span>SCROLL</span><span class="mouse"></span></div>
     </div>
 
     <div class="hero-visual" aria-hidden="true">
       <div class="disc"></div>
+      <div id="hero-floating-container"></div>
         <div class="pouch-main" style="position:absolute;left:16%;top:8%;width:42%;aspect-ratio:200/260;filter:drop-shadow(0 30px 40px rgba(0,0,0,.35));animation:floatSlow 6s ease-in-out infinite;">
-          <img src="assets/hero/pouch-front.png"
+          <img id="hero-img-1" src="assets/hero/pouch-front.png"
          alt="FLEVA product"
          style="width:100%;height:100%;object-fit:contain;display:block;">
         </div>
       <div class="can-main" style="position:absolute;right:8%;bottom:4%;width:36%;aspect-ratio:180/220;filter:drop-shadow(0 24px 30px rgba(0,0,0,.3));animation:floatSlow 7s ease-in-out infinite .4s;">
-        <img src="assets/hero/can-front.png"
+        <img id="hero-img-2" src="assets/hero/can-front.png"
          alt="FLEVA product"
          style="width:100%;height:100%;object-fit:contain;display:block;">
       </div>
-      <svg class="float-item" style="top:2%;right:22%;width:9%;" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#C8FA3C"/><text x="30" y="38" text-anchor="middle" font-size="26">🥝</text></svg>
-      <svg class="float-item" style="top:34%;left:2%;width:8%;animation-delay:.6s" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#FF2E77"/><text x="30" y="38" text-anchor="middle" font-size="24">🍓</text></svg>
-      <svg class="float-item" style="bottom:20%;left:14%;width:9%;animation-delay:1s" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#E0A72E"/><text x="30" y="38" text-anchor="middle" font-size="24">🍌</text></svg>
-      <svg class="float-item" style="top:10%;right:2%;width:7%;animation-delay:.3s" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="#F1EAD6"/><text x="30" y="38" text-anchor="middle" font-size="22">🥭</text></svg>
       <div class="play-reel"><span>Play reel</span><span class="circle">▶</span></div>
     </div>
   </div>
@@ -287,9 +288,12 @@
     <div class="footer-bottom">
       <span class="footer-copy">© 2026 FLEVA. All rights reserved.</span>
       <div class="footer-social">
-        <a href="#" aria-label="Instagram">IG</a>
-        <a href="#" aria-label="TikTok">TT</a>
-        <a href="#" aria-label="YouTube">YT</a>
+        <a href="https://instagram.com/flevaworld" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+        </a>
+        <a href="https://facebook.com/flevaworld" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.39-4h-4.2V7a1 1 0 0 1 1-1h3z"></path></svg>
+        </a>
       </div>
     </div>
   </div>
@@ -297,7 +301,11 @@
 
 <script src="script.js"></script>
 <script>
-  document.getElementById('featured-grid').innerHTML = PRODUCTS.slice(0,4).map(renderProductCard).join('');
+  function renderFeatured() {
+    document.getElementById('featured-grid').innerHTML = PRODUCTS.slice(0,4).map(renderProductCard).join('');
+  }
+  if (window.PRODUCTS && PRODUCTS.length > 0) renderFeatured();
+  else document.addEventListener('products-loaded', renderFeatured);
 
   document.querySelectorAll('#craving-choices button').forEach(btn=>{
     btn.addEventListener('click', ()=>{

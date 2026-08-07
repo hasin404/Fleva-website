@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FLEVA Admin — Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-login-body">
+
+<div class="admin-login-card">
+  <div class="admin-logo">FLEVA<span> Admin</span></div>
+  <p class="admin-subtitle">Sign in to manage your store</p>
+  <form id="admin-login-form" novalidate>
+    <div class="field">
+      <label for="email">Email</label>
+      <input type="email" id="email" required placeholder="admin@fleva.com">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" required placeholder="••••••••">
+    </div>
+    <button type="submit" class="btn-admin-primary" id="login-btn">Sign in</button>
+    <p class="admin-error" id="login-error"></p>
+  </form>
+</div>
+
+<script>
+  const API_BASE = '/api/v1';
+
+  document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const errorEl = document.getElementById('login-error');
+    const btn = document.getElementById('login-btn');
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    errorEl.textContent = '';
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      if (!['admin', 'superadmin'].includes(data.user.role)) {
+        throw new Error('Access denied — admin only');
+      }
+
+      sessionStorage.setItem('fleva_admin_access_token', data.accessToken);
+      sessionStorage.setItem('fleva_admin_user', JSON.stringify(data.user));
+      window.location.href = 'dashboard.html';
+    } catch (err) {
+      errorEl.textContent = err.message;
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+    }
+  });
+</script>
+</body>
+</html>

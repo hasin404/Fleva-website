@@ -65,6 +65,16 @@
           <input type="email" id="email" required placeholder="you@example.com">
           <span class="field-error">Enter a valid email address.</span>
         </div>
+        <div class="field" id="f-phone">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" required placeholder="e.g. 01700000000">
+          <span class="field-error">Enter a valid phone number.</span>
+        </div>
+        <div class="field" id="f-dob">
+          <label for="dob">Date of Birth</label>
+          <input type="date" id="dob" required>
+          <span class="field-error">Enter your date of birth.</span>
+        </div>
         <div class="field" id="f-password">
           <label for="password">Password</label>
           <input type="password" id="password" required minlength="6" placeholder="At least 6 characters">
@@ -85,12 +95,15 @@
 <script src="script.js"></script>
 <script>
   const form = document.getElementById('signup-form');
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const name = document.getElementById('name');
     const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+    const dob = document.getElementById('dob');
     const password = document.getElementById('password');
     const terms = document.getElementById('terms');
+    const submitBtn = form.querySelector('button[type="submit"]');
     let valid = true;
 
     const nameOk = name.value.trim().length > 1;
@@ -101,6 +114,14 @@
     document.getElementById('f-email').classList.toggle('invalid', !emailOk);
     if(!emailOk) valid = false;
 
+    const phoneOk = phone.value.trim().length >= 8;
+    document.getElementById('f-phone').classList.toggle('invalid', !phoneOk);
+    if(!phoneOk) valid = false;
+
+    const dobOk = dob.value !== '';
+    document.getElementById('f-dob').classList.toggle('invalid', !dobOk);
+    if(!dobOk) valid = false;
+
     const passOk = password.value.length >= 6;
     document.getElementById('f-password').classList.toggle('invalid', !passOk);
     if(!passOk) valid = false;
@@ -109,9 +130,18 @@
 
     if(!valid) return;
 
-    signUp(name.value, email.value, password.value);
-    showToast(`Welcome to Fleva, ${name.value.split(' ')[0]}!`);
-    setTimeout(() => location.href = 'account.html', 700);
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Creating account…';
+
+    try {
+      const user = await signUp(name.value, email.value, password.value, phone.value, dob.value);
+      showToast(`Welcome to Fleva, ${user.name || name.value.split(' ')[0]}!`);
+      setTimeout(() => location.href = 'account.html', 700);
+    } catch (err) {
+      showToast(err.message || 'Signup failed. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Create account <span class="btn-dot">→</span>';
+    }
   });
 </script>
 </body>

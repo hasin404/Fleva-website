@@ -33,11 +33,29 @@
   <div class="wrap" id="account-root"></div>
 </section>
 
+<!-- Tracking Overlay -->
+<div class="form-overlay" id="tracking-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--white);padding:30px;border-radius:var(--radius-lg);width:90%;max-width:500px;max-height:80vh;overflow-y:auto;position:relative;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 id="track-order-title" style="margin:0;font-size:1.4rem;">Order Tracking</h2>
+      <button class="btn btn-outline" style="padding:6px 12px;font-size:0.8rem;" onclick="document.getElementById('tracking-overlay').style.display='none'">Close</button>
+    </div>
+    <div id="tracking-content"></div>
+  </div>
+</div>
+
 <footer class="site-footer">
   <div class="wrap">
     <div class="footer-bottom" style="border-top:0;padding-top:0;">
       <span class="footer-copy">© 2026 FLEVA. All rights reserved.</span>
-      <div class="footer-social"><a href="#">IG</a><a href="#">TT</a><a href="#">YT</a></div>
+      <div class="footer-social">
+  <a href="https://instagram.com/flevaworld" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+  </a>
+  <a href="https://facebook.com/flevaworld" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.39-4h-4.2V7a1 1 0 0 1 1-1h3z"></path></svg>
+  </a>
+</div>
     </div>
   </div>
 </footer>
@@ -45,27 +63,125 @@
 <script src="script.js"></script>
 <script>
   const root = document.getElementById('account-root');
-  const user = getUser();
-  if(!user){
+
+  async function renderAccount() {
+    const user = getUser();
+    if (!user) {
+      root.innerHTML = `
+        <div class="account-card">
+          <h1 style="font-size:1.6rem;margin-bottom:10px;">You're not logged in</h1>
+          <p style="color:var(--ink-soft);margin-bottom:24px;">Log in or create an account to see your rewards and orders.</p>
+          <a href="login.html" class="btn btn-primary" style="justify-content:center;">Log in <span class="btn-dot">→</span></a>
+        </div>`;
+      return;
+    }
+
+    // Try to get fresh profile from API
+    let profile = user;
+    try {
+      const res = await apiFetch(`${API_BASE}/auth/me`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          profile = data.user;
+          saveUser(profile);
+        }
+      }
+    } catch (e) { /* use local data */ }
+
+    // Fetch order history
+    let ordersHtml = '<p style="color:var(--ink-soft);font-size:0.85rem;">No orders yet.</p>';
+    try {
+      const res = await apiFetch(`${API_BASE}/orders`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.orders && data.orders.length > 0) {
+          // Save orders globally for the modal
+          window.myOrders = data.orders;
+          
+          ordersHtml = data.orders.map(o => `
+            <div class="account-row" style="align-items:center;">
+              <div>
+                <b>#${o.orderNumber}</b>
+                <div style="color:var(--ink-soft);font-size:0.8rem;margin-top:2px;">${new Date(o.createdAt).toLocaleDateString()}</div>
+              </div>
+              <span style="text-transform:capitalize;font-weight:600;padding:4px 8px;background:var(--cream);border-radius:12px;font-size:0.8rem;">${o.orderStatus}</span>
+              <div style="text-align:right;">
+                <div style="margin-bottom:4px;font-weight:600;">৳${o.total}</div>
+                <button onclick="viewTracking('${o._id}')" style="background:none;border:none;color:var(--brand);font-weight:700;cursor:pointer;font-size:0.85rem;text-decoration:underline;">View Details</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    } catch (e) { /* silent */ }
+
     root.innerHTML = `
       <div class="account-card">
-        <h1 style="font-size:1.6rem;margin-bottom:10px;">You're not logged in</h1>
-        <p style="color:var(--ink-soft);margin-bottom:24px;">Log in or create an account to see your rewards and orders.</p>
-        <a href="login.html" class="btn btn-primary" style="justify-content:center;">Log in <span class="btn-dot">→</span></a>
-      </div>`;
-  } else {
-    root.innerHTML = `
-      <div class="account-card">
-        <div class="avatar">${user.name.charAt(0).toUpperCase()}</div>
-        <h1 style="font-size:1.6rem;margin-bottom:4px;">Hey, ${user.name}</h1>
+        <div class="avatar">${(profile.name || 'U').charAt(0).toUpperCase()}</div>
+        <h1 style="font-size:1.6rem;margin-bottom:4px;">Hey, ${profile.name || 'there'}</h1>
         <p style="color:var(--ink-soft);margin-bottom:24px;font-size:0.85rem;">Welcome to the Fleva fam.</p>
-        <div class="account-row"><b>Email</b><span>${user.email}</span></div>
-        <div class="account-row"><b>Rewards points</b><span>0</span></div>
-        <div class="account-row"><b>Orders</b><span>0</span></div>
+        <div class="account-row"><b>Email</b><span>${profile.email || ''}</span></div>
+        <div class="account-row"><b>Phone</b><span>${profile.phone || 'Not set'}</span></div>
+        <div class="account-row"><b>Rewards points</b><span>${profile.rewardPoints || 0}</span></div>
+        <div style="margin-top:24px;text-align:left;">
+          <h3 style="font-size:1rem;margin-bottom:12px;">Order History</h3>
+          ${ordersHtml}
+        </div>
         <button class="btn btn-outline btn-block" style="margin-top:24px;" id="logout-btn">Log out</button>
       </div>`;
-    document.getElementById('logout-btn').onclick = () => { logOut(); location.reload(); };
+
+    document.getElementById('logout-btn').onclick = async () => {
+      await logOut();
+      location.reload();
+    };
   }
+
+  function viewTracking(orderId) {
+    const order = window.myOrders.find(o => o._id === orderId);
+    if (!order) return;
+    
+    document.getElementById('track-order-title').textContent = `Order #${order.orderNumber}`;
+    
+    const timelineHtml = (order.trackingHistory || []).map((t, idx) => `
+      <div style="display:flex;margin-bottom:20px;position:relative;">
+        <div style="width:12px;height:12px;border-radius:50%;background:var(--brand);margin-right:16px;margin-top:4px;z-index:2;position:relative;border:2px solid var(--white);box-shadow:0 0 0 2px var(--brand);"></div>
+        ${idx !== order.trackingHistory.length - 1 ? `<div style="position:absolute;left:5px;top:16px;bottom:-20px;width:2px;background:var(--line);z-index:1;"></div>` : ''}
+        <div>
+          <div style="font-weight:700;font-size:0.95rem;text-transform:capitalize;">${t.status}</div>
+          <div style="font-size:0.85rem;color:var(--ink-soft);margin-top:2px;">${t.message || ''}</div>
+          <div style="font-size:0.75rem;color:var(--ink-soft);margin-top:4px;">${new Date(t.timestamp).toLocaleString()}</div>
+        </div>
+      </div>
+    `).join('');
+    
+    const itemsHtml = order.items.map(i => `
+      <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line);font-size:0.9rem;">
+        <span>${i.product?.title || 'Product'} × ${i.qty}</span>
+        <span>৳${i.price * i.qty}</span>
+      </div>
+    `).join('');
+    
+    document.getElementById('tracking-content').innerHTML = `
+      <div style="margin-bottom:30px;">
+        <h3 style="font-size:1rem;margin-bottom:12px;">Timeline</h3>
+        ${timelineHtml}
+      </div>
+      <div>
+        <h3 style="font-size:1rem;margin-bottom:12px;">Order Items</h3>
+        ${itemsHtml}
+        <div style="display:flex;justify-content:space-between;padding-top:12px;margin-top:12px;font-weight:700;">
+          <span>Total Paid</span>
+          <span>৳${order.total}</span>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById('tracking-overlay').style.display = 'flex';
+  }
+
+  renderAccount();
 </script>
+<script src="chat-widget.js"></script>
 </body>
 </html>

@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="styles.css">
 <style>
   .checkout-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:48px; align-items:start; }
-  @media (max-width:940px){ .checkout-grid{ grid-template-columns:1fr; } }
+  @media (max-width:940px){ .checkout-grid{ grid-template-columns:1fr; gap:24px; } }
 
   .cart-line{ display:flex; gap:16px; align-items:center; padding:16px 0; border-bottom:1px solid var(--line); }
   .cart-line .media{ width:64px; height:64px; background:var(--cream-soft); border-radius:var(--radius-sm); flex-shrink:0; padding:6px; }
@@ -44,6 +44,7 @@
   .pay-option .sub{ font-size:0.72rem; color:var(--ink-soft); }
 
   .summary-card{ background:var(--cream-soft); border-radius:var(--radius-lg); padding:28px; position:sticky; top:104px; }
+  @media (max-width:640px){ .summary-card{ padding:16px; border-radius:var(--radius-md); } }
   .summary-row{ display:flex; justify-content:space-between; margin-bottom:12px; font-size:0.9rem; }
   .summary-row.total{ font-size:1.15rem; font-weight:800; padding-top:14px; border-top:1px solid var(--line); margin-top:6px; }
   .summary-row.total span:last-child{ font-family:var(--font-mono); }
@@ -118,9 +119,21 @@
 
     <div class="summary-card">
       <h3 style="font-size:1.1rem;margin-bottom:18px;">Order summary</h3>
+      <div style="display:flex; gap:10px; margin-bottom: 20px;">
+        <input type="text" id="coupon-code" placeholder="Discount Code" style="flex:1; border:2px solid var(--line); border-radius:var(--radius-sm); padding:10px; font-family:var(--font-sans);">
+        <button class="btn btn-outline" id="apply-coupon" type="button" style="padding:10px 16px;">Apply</button>
+      </div>
+      <div id="coupon-message" style="font-size:0.8rem; margin-top:-10px; margin-bottom:15px; font-weight:600;"></div>
+
       <div class="summary-row"><span>Subtotal</span><span id="sum-subtotal">৳0</span></div>
+      <div class="summary-row" id="sum-discount-row" style="display:none; color:var(--pink);"><span>Discount <span id="sum-discount-name" style="font-size:0.75rem;"></span></span><span id="sum-discount">-৳0</span></div>
       <div class="summary-row"><span>Delivery</span><span id="sum-delivery">৳0</span></div>
       <div class="summary-row total"><span>Total</span><span id="sum-total">৳0</span></div>
+
+      <div id="advance-payment-section" style="display:none; margin-top:16px; padding-top:16px; border-top:1px dashed var(--line);">
+        <div class="summary-row" style="color:var(--lime);font-weight:700;"><span>Advance Payment (Pre-Order)</span><span id="sum-advance">৳0</span></div>
+        <div class="summary-row" style="font-size:0.85rem;color:var(--ink-soft);"><span>Remaining (COD)</span><span id="sum-remaining">৳0</span></div>
+      </div>
     </div>
   </div>
 </section>
@@ -129,14 +142,21 @@
   <div class="wrap">
     <div class="footer-bottom" style="border-top:0;padding-top:0;">
       <span class="footer-copy">© 2026 FLEVA. All rights reserved.</span>
-      <div class="footer-social"><a href="#">IG</a><a href="#">TT</a><a href="#">YT</a></div>
+      <div class="footer-social">
+  <a href="https://instagram.com/flevaworld" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+  </a>
+  <a href="https://facebook.com/flevaworld" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.39-4h-4.2V7a1 1 0 0 1 1-1h3z"></path></svg>
+  </a>
+</div>
     </div>
   </div>
 </footer>
 
 <script src="script.js"></script>
 <script>
-  const DELIVERY_FEE = 80;
+  let appliedCoupon = null;
 
   function renderCart(){
     const cart = getCart();
@@ -171,11 +191,86 @@
 
   function renderSummary(){
     const subtotal = cartTotal();
-    const delivery = subtotal > 0 ? DELIVERY_FEE : 0;
+    const configDeliveryFee = (window.STOREFRONT_CONFIG && window.STOREFRONT_CONFIG.deliveryFee !== undefined) ? window.STOREFRONT_CONFIG.deliveryFee : 80;
+    const delivery = subtotal >= 1500 ? 0 : (subtotal > 0 ? configDeliveryFee : 0);
+    
+    let discountAmt = 0;
+    if (appliedCoupon && subtotal > 0 && subtotal >= (appliedCoupon.minOrderAmount || 0)) {
+      if (appliedCoupon.type === 'percentage') {
+        discountAmt = Math.floor(subtotal * (appliedCoupon.value / 100));
+        if (appliedCoupon.maxDiscount && discountAmt > appliedCoupon.maxDiscount) {
+          discountAmt = appliedCoupon.maxDiscount;
+        }
+      } else {
+        discountAmt = appliedCoupon.value;
+      }
+      if (discountAmt > subtotal) discountAmt = subtotal; // Prevent negative total
+      
+      document.getElementById('sum-discount-row').style.display = 'flex';
+      document.getElementById('sum-discount-name').textContent = `(${appliedCoupon.code})`;
+      document.getElementById('sum-discount').textContent = `-৳${discountAmt}`;
+    } else {
+      document.getElementById('sum-discount-row').style.display = 'none';
+      appliedCoupon = null;
+    }
+    
+    const total = subtotal - discountAmt + delivery;
     document.getElementById('sum-subtotal').textContent = `৳${subtotal}`;
     document.getElementById('sum-delivery').textContent = `৳${delivery}`;
-    document.getElementById('sum-total').textContent = `৳${subtotal + delivery}`;
+    document.getElementById('sum-total').textContent = `৳${total}`;
+
+    const cart = getCart();
+    const hasPreOrder = cart.some(item => {
+      const p = PRODUCTS.find(x => x.id === item.id);
+      return p && p.availability === 'pre-order';
+    });
+
+    const advanceSec = document.getElementById('advance-payment-section');
+    if (hasPreOrder && total > 0) {
+      let advanceAmt = 0;
+      for (const item of cart) {
+        const p = PRODUCTS.find(x => x.id === item.id);
+        if (p && p.availability === 'pre-order') {
+          const pct = p.advancePaymentPercentage !== undefined ? p.advancePaymentPercentage : 20;
+          advanceAmt += (p.price * item.qty) * (pct / 100);
+        }
+      }
+      advanceAmt = Math.ceil(advanceAmt);
+      if (advanceAmt > total) advanceAmt = total;
+      
+      const remaining = total - advanceAmt;
+      advanceSec.style.display = 'block';
+      document.getElementById('sum-advance').textContent = `৳${advanceAmt}`;
+      document.getElementById('sum-remaining').textContent = `৳${remaining}`;
+    } else {
+      if (advanceSec) advanceSec.style.display = 'none';
+    }
   }
+
+  document.getElementById('apply-coupon').addEventListener('click', async () => {
+    const code = document.getElementById('coupon-code').value.trim();
+    const msgEl = document.getElementById('coupon-message');
+    if (!code) return;
+    
+    const res = await fetch(`${API_BASE}/coupons/validate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, orderTotal: cartTotal() })
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      appliedCoupon = data.coupon;
+      msgEl.textContent = `Coupon applied!`;
+      msgEl.style.color = 'var(--lime)';
+      renderSummary();
+    } else {
+      appliedCoupon = null;
+      msgEl.textContent = data.message || 'Invalid coupon';
+      msgEl.style.color = 'var(--red)';
+      renderSummary();
+    }
+  });
 
   document.getElementById('cart-lines').addEventListener('click', e => {
     const inc = e.target.closest('[data-inc]');
@@ -187,17 +282,76 @@
     if(rem){ removeFromCart(rem.dataset.remove); renderCart(); }
   });
 
-  renderCart();
+  if (window.PRODUCTS && window.PRODUCTS.length > 0) {
+    renderCart();
+  } else {
+    window.addEventListener('products-loaded', renderCart);
+  }
+  document.addEventListener('storefront-loaded', renderSummary);
 
-  document.getElementById('checkout-form').addEventListener('submit', e => {
+  document.getElementById('checkout-form').addEventListener('submit', async e => {
     e.preventDefault();
-    if(getCart().length === 0) return;
+    const cart = getCart();
+    if(cart.length === 0) return;
+
+    const btn = document.getElementById('place-order');
+    btn.disabled = true;
+    btn.innerHTML = 'Placing order…';
+
     const method = document.querySelector('input[name="pay"]:checked').value;
-    const labels = { bkash: 'bKash', nagad: 'Nagad', cod: 'Cash on delivery' };
-    showToast(`Order placed — pay via ${labels[method]}`);
-    localStorage.removeItem('fleva_cart');
-    setTimeout(() => { renderCart(); updateCartBadge(); }, 900);
+
+    // Build order payload
+    const items = cart.map(item => {
+      const p = PRODUCTS.find(x => x.id === item.id);
+      return { product: p?._id || item.id, qty: item.qty };
+    });
+
+    const orderData = {
+      items,
+      shippingAddress: {
+        name: document.getElementById('c-name').value,
+        phone: document.getElementById('c-phone').value,
+        email: document.getElementById('c-email').value,
+        street: document.getElementById('c-address').value,
+        city: document.getElementById('c-city').value,
+        zip: document.getElementById('c-zip').value,
+      },
+      paymentMethod: method,
+      couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+    };
+
+    try {
+      const res = await apiFetch(`${API_BASE}/orders`, {
+        method: 'POST',
+        body: JSON.stringify(orderData),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        localStorage.removeItem('fleva_cart');
+        updateCartBadge();
+
+        const labels = { bkash: 'bKash', nagad: 'Nagad', cod: 'Cash on delivery' };
+        document.querySelector('.checkout-grid').innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+            <div style="font-size:3rem;margin-bottom:16px;">🎉</div>
+            <h2 style="font-size:1.8rem;margin-bottom:12px;">Order Confirmed!</h2>
+            <p style="color:var(--ink-soft);margin-bottom:8px;">Order #<strong>${data.order.orderNumber}</strong></p>
+            <p style="color:var(--ink-soft);margin-bottom:8px;">Total: <strong>৳${data.order.total}</strong></p>
+            <p style="color:var(--ink-soft);margin-bottom:28px;">Payment: ${labels[method]}</p>
+            <a href="shop.html" class="btn btn-primary">Continue shopping <span class="btn-dot">→</span></a>
+            <a href="account.html" class="btn btn-outline" style="margin-left:12px;">View orders</a>
+          </div>`;
+      } else {
+        throw new Error(data.message || 'Order failed');
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to place order. Please try again.');
+      btn.disabled = false;
+      btn.innerHTML = 'Place order <span class="btn-dot">→</span>';
+    }
   });
 </script>
+<script src="chat-widget.js"></script>
 </body>
 </html>

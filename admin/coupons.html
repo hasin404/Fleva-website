@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coupons — FLEVA Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .form-overlay {
+    position: fixed; inset: 0; background: rgba(22,20,15,0.6); z-index: 100;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .form-overlay.open { display: flex; }
+  .form-card { background: var(--cream); border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto; }
+  .form-card h2 { font-size: 1.2rem; margin-bottom: 20px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-actions { display: flex; gap: 12px; margin-top: 20px; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar"></div>
+  <main class="admin-main">
+    <div class="admin-header">
+      <div class="header-left"><button class="admin-mobile-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">☰</button><h1>Coupons</h1></div>
+      <div class="header-right">
+        <button class="btn-admin-primary" style="width:auto;padding:10px 24px;" onclick="openForm()">+ Create Coupon</button>
+        <div id="header-user"></div>
+      </div>
+    </div>
+
+    <div class="data-section">
+      <div class="table-responsive"><table class="data-table">
+        <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Usage</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="coupon-list"></tbody>
+      </table></div>
+    </div>
+  </main>
+</div>
+
+<div class="form-overlay" id="form-overlay">
+  <div class="form-card">
+    <h2 id="form-title">Create Coupon</h2>
+    <form id="coupon-form" novalidate>
+      <input type="hidden" id="coupon-id">
+      <div class="field"><label>Code</label><input id="c-code" required placeholder="SUMMER20" style="text-transform:uppercase;"></div>
+      <div class="form-row">
+        <div class="field">
+          <label>Type</label>
+          <select id="c-type" style="width:100%;padding:12px;border:2px solid var(--line);border-radius:var(--radius-sm);background:var(--cream-soft);">
+            <option value="percentage">Percentage (%)</option>
+            <option value="fixed">Fixed Amount (৳)</option>
+            <option value="free-shipping">Free Shipping</option>
+          </select>
+        </div>
+        <div class="field"><label>Value</label><input type="number" id="c-value" min="0" placeholder="20"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Min Order (৳)</label><input type="number" id="c-min" min="0" value="0"></div>
+        <div class="field"><label>Max Discount (৳)</label><input type="number" id="c-max" min="0" value="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Usage Limit</label><input type="number" id="c-usage" min="0" value="100"></div>
+        <div class="field"><label>Per Customer</label><input type="number" id="c-per-customer" min="0" value="1"></div>
+      </div>
+      <div class="field"><label>Expiry Date</label><input type="date" id="c-expiry"></div>
+      <div class="field" style="display:flex;gap:16px;align-items:center;">
+        <label style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="c-active" checked style="width:auto;"> Active</label>
+        <label style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="c-auto" style="width:auto;"> Auto Apply</label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-admin-primary" style="width:auto;padding:12px 28px;">Save Coupon</button>
+        <button type="button" class="btn-sm" onclick="closeForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+  if (!requireAdmin()) throw new Error('Not admin');
+  document.getElementById('sidebar').innerHTML = renderSidebar();
+
+  async function loadCoupons() {
+    try {
+      const res = await adminFetch(`${API_BASE}/coupons`);
+      const data = await res.json();
+      const coupons = data.coupons || [];
+
+      document.getElementById('coupon-list').innerHTML = coupons.length
+        ? coupons.map(c => {
+          const isExpired = c.expiryDate && new Date(c.expiryDate) < new Date();
+          return `<tr>
+            <td><strong style="font-family:var(--font-mono);letter-spacing:0.05em;">${c.code}</strong></td>
+            <td style="text-transform:capitalize;">${c.type}</td>
+            <td>${c.type === 'percentage' ? c.value + '%' : c.type === 'free-shipping' ? '—' : '৳' + c.value}</td>
+            <td>৳${c.minOrderAmount || 0}</td>
+            <td>${c.usedCount || 0}/${c.usageLimit || '∞'}</td>
+            <td>${c.expiryDate ? formatDate(c.expiryDate) : 'Never'}</td>
+            <td>${isExpired ? '<span class="badge badge-cancelled">Expired</span>' : c.isActive ? '<span class="badge badge-delivered">Active</span>' : '<span class="badge badge-pending">Inactive</span>'}</td>
+            <td>
+              <button class="btn-sm" onclick="editCoupon('${c._id}')">Edit</button>
+              <button class="btn-sm danger" onclick="deleteCoupon('${c._id}', '${c.code}')">Delete</button>
+            </td>
+          </tr>`;
+        }).join('')
+        : '<tr><td colspan="8" style="text-align:center;color:var(--ink-soft)">No coupons created yet</td></tr>';
+    } catch (err) {
+      document.getElementById('coupon-list').innerHTML = '<tr><td colspan="8" style="color:var(--red)">Failed to load coupons</td></tr>';
+    }
+  }
+
+  function openForm(coupon = null) {
+    document.getElementById('form-title').textContent = coupon ? 'Edit Coupon' : 'Create Coupon';
+    document.getElementById('coupon-id').value = coupon?._id || '';
+    document.getElementById('c-code').value = coupon?.code || '';
+    document.getElementById('c-type').value = coupon?.type || 'percentage';
+    document.getElementById('c-value').value = coupon?.value || '';
+    document.getElementById('c-min').value = coupon?.minOrderAmount || 0;
+    document.getElementById('c-max').value = coupon?.maxDiscount || 0;
+    document.getElementById('c-usage').value = coupon?.usageLimit || 100;
+    document.getElementById('c-per-customer').value = coupon?.perCustomerLimit || 1;
+    document.getElementById('c-expiry').value = coupon?.expiryDate ? coupon.expiryDate.split('T')[0] : '';
+    document.getElementById('c-active').checked = coupon?.isActive ?? true;
+    document.getElementById('c-auto').checked = coupon?.autoApply || false;
+    document.getElementById('form-overlay').classList.add('open');
+  }
+  function closeForm() { document.getElementById('form-overlay').classList.remove('open'); }
+
+  async function editCoupon(id) {
+    const res = await adminFetch(`${API_BASE}/coupons/${id}`);
+    const data = await res.json();
+    if (data.coupon) openForm(data.coupon);
+  }
+
+  async function deleteCoupon(id, code) {
+    if (!confirm(`Delete coupon "${code}"?`)) return;
+    await adminFetch(`${API_BASE}/coupons/${id}`, { method: 'DELETE' });
+    loadCoupons();
+  }
+
+  document.getElementById('coupon-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('coupon-id').value;
+    const body = {
+      code: document.getElementById('c-code').value.toUpperCase(),
+      type: document.getElementById('c-type').value,
+      value: Number(document.getElementById('c-value').value),
+      minOrderAmount: Number(document.getElementById('c-min').value),
+      maxDiscount: Number(document.getElementById('c-max').value),
+      usageLimit: Number(document.getElementById('c-usage').value),
+      perCustomerLimit: Number(document.getElementById('c-per-customer').value),
+      expiryDate: document.getElementById('c-expiry').value || null,
+      isActive: document.getElementById('c-active').checked,
+      autoApply: document.getElementById('c-auto').checked,
+    };
+
+    const url = id ? `${API_BASE}/coupons/${id}` : `${API_BASE}/coupons`;
+    const method = id ? 'PUT' : 'POST';
+    const res = await adminFetch(url, { method, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (data.success || data.coupon) { closeForm(); loadCoupons(); }
+    else alert(data.message || 'Failed to save coupon');
+  });
+
+  document.getElementById('form-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeForm(); });
+  loadCoupons();
+</script>
+</body>
+</html>

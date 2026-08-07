@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Storefront | FLEVA Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .form-section { background: var(--white); padding: 32px; border-radius: var(--radius-lg); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); margin-bottom: 24px; }
+  .form-section h3 { margin-bottom: 20px; font-size: 1.5rem; }
+  .form-row { display: grid; grid-template-columns: 1fr; gap: 20px; margin-bottom: 20px; }
+  @media (min-width: 768px) { .form-row { grid-template-columns: 1fr 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 8px; }
+  .field label { font-weight: 600; font-size: 0.9rem; }
+  .field input, .field textarea { padding: 12px 16px; border: 2px solid var(--line); border-radius: var(--radius-sm); font-family: inherit; font-size: 1rem; width: 100%; }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--ink); }
+  .img-preview { width: 100%; height: 200px; border: 2px dashed var(--line); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; background: var(--cream-soft); margin-top: 10px; overflow: hidden; }
+  .img-preview img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .btn-save { background: var(--lime); color: var(--ink); border: 2px solid var(--ink); box-shadow: 4px 4px 0 var(--ink); padding: 16px 32px; font-weight: 700; font-size: 1.1rem; border-radius: var(--radius-pill); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+  .btn-save:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <div id="sidebar"></div>
+  <main class="admin-main">
+    <div class="admin-header">
+      <div class="header-left"><button class="admin-mobile-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">☰</button><h1>Storefront Settings</h1></div>
+      <div class="header-right">
+        <div id="header-user"></div>
+      </div>
+    </div>
+
+    <form id="storefront-form" onsubmit="saveStorefront(event)">
+      <div class="form-section">
+        <h3>Hero Content</h3>
+        <div class="form-row">
+          <div class="field">
+            <label>Hero Title (HTML allowed)</label>
+            <textarea id="hero-title" rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label>Hero Subtitle</label>
+            <textarea id="hero-subtitle" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Button Text</label>
+            <input type="text" id="hero-btn-text">
+          </div>
+          <div class="field">
+            <label>Button Link</label>
+            <input type="text" id="hero-btn-link">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Global Settings</h3>
+        <div class="form-row">
+          <div class="field">
+            <label>Delivery Fee (৳)</label>
+            <input type="number" id="delivery-fee" min="0" value="80" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Hero Images</h3>
+        <div class="form-row">
+          <div class="field">
+            <label>Left Image (Pouch)</label>
+            <input type="file" id="hero-img-1" accept="image/*" onchange="previewImage(this, 'preview-1')">
+            <div class="img-preview"><img id="preview-1" src="" alt="Left Image Preview"></div>
+          </div>
+          <div class="field">
+            <label>Right Image (Can)</label>
+            <input type="file" id="hero-img-2" accept="image/*" onchange="previewImage(this, 'preview-2')">
+            <div class="img-preview"><img id="preview-2" src="" alt="Right Image Preview"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Craving Default Visuals</h3>
+        <p style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 20px;">Upload images for the default floating animation in the cravings section.</p>
+        <div class="form-row">
+          <div class="field">
+            <label>Floating Image 1 (Kiwi)</label>
+            <input type="file" name="cravingImg1" accept="image/*" onchange="previewImage(this, 'preview-craving-1')">
+            <div class="img-preview"><img id="preview-craving-1" src="" alt="Preview"></div>
+          </div>
+          <div class="field">
+            <label>Floating Image 2 (Strawberry)</label>
+            <input type="file" name="cravingImg2" accept="image/*" onchange="previewImage(this, 'preview-craving-2')">
+            <div class="img-preview"><img id="preview-craving-2" src="" alt="Preview"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Floating Image 3 (Banana)</label>
+            <input type="file" name="cravingImg3" accept="image/*" onchange="previewImage(this, 'preview-craving-3')">
+            <div class="img-preview"><img id="preview-craving-3" src="" alt="Preview"></div>
+          </div>
+          <div class="field">
+            <label>Center Main Image</label>
+            <input type="file" name="cravingImgMain" accept="image/*" onchange="previewImage(this, 'preview-craving-main')">
+            <div class="img-preview"><img id="preview-craving-main" src="" alt="Preview"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Hero Floating Images (Up to 7)</h3>
+        <p style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 20px;">Upload small fruit images to float in the hero section. Empty slots will not be shown.</p>
+        <div class="form-row">
+          <div class="field">
+            <label>Float Image 1</label>
+            <input type="file" name="heroFloat1" accept="image/*" onchange="previewImage(this, 'preview-hf-1')">
+            <div class="img-preview"><img id="preview-hf-1" src="" alt="Preview 1"></div>
+          </div>
+          <div class="field">
+            <label>Float Image 2</label>
+            <input type="file" name="heroFloat2" accept="image/*" onchange="previewImage(this, 'preview-hf-2')">
+            <div class="img-preview"><img id="preview-hf-2" src="" alt="Preview 2"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Float Image 3</label>
+            <input type="file" name="heroFloat3" accept="image/*" onchange="previewImage(this, 'preview-hf-3')">
+            <div class="img-preview"><img id="preview-hf-3" src="" alt="Preview 3"></div>
+          </div>
+          <div class="field">
+            <label>Float Image 4</label>
+            <input type="file" name="heroFloat4" accept="image/*" onchange="previewImage(this, 'preview-hf-4')">
+            <div class="img-preview"><img id="preview-hf-4" src="" alt="Preview 4"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Float Image 5</label>
+            <input type="file" name="heroFloat5" accept="image/*" onchange="previewImage(this, 'preview-hf-5')">
+            <div class="img-preview"><img id="preview-hf-5" src="" alt="Preview 5"></div>
+          </div>
+          <div class="field">
+            <label>Float Image 6</label>
+            <input type="file" name="heroFloat6" accept="image/*" onchange="previewImage(this, 'preview-hf-6')">
+            <div class="img-preview"><img id="preview-hf-6" src="" alt="Preview 6"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Float Image 7</label>
+            <input type="file" name="heroFloat7" accept="image/*" onchange="previewImage(this, 'preview-hf-7')">
+            <div class="img-preview"><img id="preview-hf-7" src="" alt="Preview 7"></div>
+          </div>
+          <div></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Cravings Section (Product Mapping)</h3>
+        <p style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 20px;">Select a product to display when a customer clicks a specific craving button.</p>
+        <div class="form-row">
+          <div class="field">
+            <label>I want energy ⚡</label>
+            <select id="craving-energy" class="cravings-select"><option value="">-- Select Product --</option></select>
+          </div>
+          <div class="field">
+            <label>I want something fruity 🍓</label>
+            <select id="craving-fruity" class="cravings-select"><option value="">-- Select Product --</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>I want guilt-free snacks 😊</label>
+            <select id="craving-guiltfree" class="cravings-select"><option value="">-- Select Product --</option></select>
+          </div>
+          <div class="field">
+            <label>Surprise me 🎲</label>
+            <select id="craving-surprise" class="cravings-select"><option value="">-- Select Product --</option></select>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <button type="submit" class="btn-save">Save Changes</button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script src="admin.js"></script>
+<script>
+  if (!requireAdmin()) throw new Error('Not admin');
+  document.getElementById('sidebar').innerHTML = renderSidebar();
+  document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  let allProducts = [];
+
+  async function loadProductsDropdown() {
+    try {
+      let products = [];
+      try {
+        const res = await adminFetch(`${API_BASE}/products?limit=100&admin=true`);
+        const data = await res.json();
+        if (data.products && data.products.length > 0) {
+          products = data.products;
+        }
+      } catch (e) {
+        console.warn('adminFetch products failed, trying public endpoint:', e);
+      }
+
+      if (products.length === 0) {
+        const res = await fetch(`${API_BASE}/products?limit=100`).catch(() => null);
+        if (res && res.ok) {
+          const data = await res.json();
+          if (data.products && data.products.length > 0) {
+            products = data.products;
+          }
+        }
+      }
+
+      if (products.length === 0) {
+        products = [
+          { _id: '6a74b2280bf3887ea7db4ce2', title: 'Protein Bar — Chocolate Nut Crunch', price: 350 },
+          { _id: '6a74b2280bf3887ea7db4ce8', title: 'Freeze-Dried Strawberries', price: 280 },
+          { _id: '6a74b2280bf3887ea7db4cee', title: 'Tropical Fruit Chips', price: 250 },
+          { _id: '6a74b2280bf3887ea7db4ceb', title: 'Chocolate-Dipped Fruit Mix', price: 320 },
+          { _id: '6a75bcaff6ded8c5bdc7a5b6', title: 'Felva powder', price: 400 },
+          { _id: '6a74b2280bf3887ea7db4cf4', title: 'Gift box', price: 950 },
+          { _id: '6a74b2280bf3887ea7db4cf1', title: 'Berry Power Powder', price: 450 }
+        ];
+      }
+
+      allProducts = products;
+
+      const optionsHtml = `<option value="">-- Select Product --</option>` + 
+        products.map(p => `<option value="${p._id || p.id}">${p.title || p.name} (৳${p.price})</option>`).join('');
+
+      ['craving-energy', 'craving-fruity', 'craving-guiltfree', 'craving-surprise'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = optionsHtml;
+      });
+      document.querySelectorAll('.cravings-select').forEach(sel => sel.innerHTML = optionsHtml);
+    } catch(err) {
+      console.error('Failed to load products for dropdowns', err);
+    }
+  }
+
+  async function loadStorefront() {
+    await loadProductsDropdown();
+    try {
+      const res = await adminFetch(`${API_BASE}/storefront`);
+      const data = await res.json();
+      if (data.success && data.storefront) {
+        document.getElementById('hero-title').value = data.storefront.heroTitle || 'Real fruits.<br>Crazy good.<span class="stroke">Fleva.</span>';
+        document.getElementById('hero-subtitle').value = data.storefront.heroSubtitle || 'From snacking to sharing, we make healthy feel insanely delicious.';
+        document.getElementById('hero-btn-text').value = data.storefront.heroBtnText || 'Explore now';
+        document.getElementById('hero-btn-link').value = data.storefront.heroBtnLink || 'shop.html';
+        document.getElementById('delivery-fee').value = data.storefront.deliveryFee ?? 80;
+        
+        if (data.storefront.heroImage1) document.getElementById('preview-1').src = `/${data.storefront.heroImage1}`;
+        if (data.storefront.heroImage2) document.getElementById('preview-2').src = `/${data.storefront.heroImage2}`;
+        
+        if (data.storefront.cravingImg1) document.getElementById('preview-craving-1').src = `/${data.storefront.cravingImg1}`;
+        if (data.storefront.cravingImg2) document.getElementById('preview-craving-2').src = `/${data.storefront.cravingImg2}`;
+        if (data.storefront.cravingImg3) document.getElementById('preview-craving-3').src = `/${data.storefront.cravingImg3}`;
+        if (data.storefront.cravingImgMain) document.getElementById('preview-craving-main').src = `/${data.storefront.cravingImgMain}`;
+
+        for (let i = 1; i <= 7; i++) {
+          if (data.storefront[`heroFloat${i}`]) {
+            document.getElementById(`preview-hf-${i}`).src = `/${data.storefront[`heroFloat${i}`]}`;
+          }
+        }
+
+        if (data.storefront.cravings) {
+          const c = data.storefront.cravings;
+          const getId = (val) => {
+            if (!val) return '';
+            if (typeof val === 'object' && val._id) return String(val._id);
+            return String(val);
+          };
+          const setVal = (id, targetVal) => {
+            const el = document.getElementById(id);
+            if (!el || !targetVal) return;
+            el.value = targetVal;
+            if (!el.value) {
+              for (let opt of el.options) {
+                if (opt.value === targetVal || String(opt.value) === String(targetVal)) {
+                  opt.selected = true;
+                  break;
+                }
+              }
+            }
+          };
+          setVal('craving-energy', getId(c.energy));
+          setVal('craving-fruity', getId(c.fruity));
+          setVal('craving-guiltfree', getId(c.guiltFree));
+          setVal('craving-surprise', getId(c.surprise));
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to load storefront settings.');
+    }
+  }
+
+  function previewImage(input, previewId) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => document.getElementById(previewId).src = e.target.result;
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  async function saveStorefront(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+      const formData = new FormData();
+      formData.append('heroTitle', document.getElementById('hero-title').value);
+      formData.append('heroSubtitle', document.getElementById('hero-subtitle').value);
+      formData.append('heroBtnText', document.getElementById('hero-btn-text').value);
+      formData.append('heroBtnLink', document.getElementById('hero-btn-link').value);
+      formData.append('deliveryFee', document.getElementById('delivery-fee').value);
+
+      const img1 = document.getElementById('hero-img-1') ? document.getElementById('hero-img-1').files[0] : document.querySelector('input[name="heroImage1"]').files[0];
+      const img2 = document.getElementById('hero-img-2') ? document.getElementById('hero-img-2').files[0] : document.querySelector('input[name="heroImage2"]').files[0];
+      if (img1) formData.append('heroImage1', img1);
+      if (img2) formData.append('heroImage2', img2);
+
+      const ci1 = document.querySelector('input[name="cravingImg1"]').files[0];
+      const ci2 = document.querySelector('input[name="cravingImg2"]').files[0];
+      const ci3 = document.querySelector('input[name="cravingImg3"]').files[0];
+      const ciMain = document.querySelector('input[name="cravingImgMain"]').files[0];
+      if (ci1) formData.append('cravingImg1', ci1);
+      if (ci2) formData.append('cravingImg2', ci2);
+      if (ci3) formData.append('cravingImg3', ci3);
+      if (ciMain) formData.append('cravingImgMain', ciMain);
+
+      for (let i = 1; i <= 7; i++) {
+        const hf = document.querySelector(`input[name="heroFloat${i}"]`).files[0];
+        if (hf) formData.append(`heroFloat${i}`, hf);
+      }
+
+      const getVal = (id) => {
+        const val = document.getElementById(id).value;
+        return (val && val !== 'undefined') ? val : null;
+      };
+
+      const cravings = {
+        energy: getVal('craving-energy'),
+        fruity: getVal('craving-fruity'),
+        guiltFree: getVal('craving-guiltfree'),
+        surprise: getVal('craving-surprise')
+      };
+      formData.append('cravings', JSON.stringify(cravings));
+
+      const res = await adminFetch(`${API_BASE}/storefront`, {
+        method: 'PUT',
+        body: formData,
+        // Don't set Content-Type header for FormData, browser sets it with boundary
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        alert('Storefront updated successfully!');
+        await loadStorefront();
+      } else {
+        alert(data.message || 'Error updating storefront');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error.');
+    } finally {
+      btn.textContent = 'Save Changes';
+      btn.disabled = false;
+    }
+  }
+
+  loadStorefront();
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banners — FLEVA Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .banner-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 18px; margin-bottom: 24px; }
+  .banner-card { background: var(--white); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .banner-card .preview { height: 140px; background: var(--cream-soft); display: flex; align-items: center; justify-content: center; font-size: 3rem; }
+  .banner-card .preview img { width: 100%; height: 100%; object-fit: cover; }
+  .banner-card .details { padding: 16px; }
+  .banner-card .details h3 { font-size: 0.95rem; margin-bottom: 6px; }
+  .banner-card .details .meta { font-size: 0.75rem; color: var(--ink-soft); margin-bottom: 10px; }
+  .banner-card .details .actions { display: flex; gap: 8px; }
+  .form-overlay {
+    position: fixed; inset: 0; background: rgba(22,20,15,0.6); z-index: 100;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .form-overlay.open { display: flex; }
+  .form-card { background: var(--cream); border-radius: var(--radius-lg); padding: 32px; width: 100%; max-width: 480px; }
+  .form-card h2 { font-size: 1.2rem; margin-bottom: 20px; }
+  .form-actions { display: flex; gap: 12px; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar"></div>
+  <main class="admin-main">
+    <div class="admin-header">
+      <div class="header-left"><button class="admin-mobile-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('open')">☰</button><h1>Banners</h1></div>
+      <div class="header-right">
+        <button class="btn-admin-primary" style="width:auto;padding:10px 24px;" onclick="openForm()">+ Add Banner</button>
+        <div id="header-user"></div>
+      </div>
+    </div>
+    <div class="banner-grid" id="banner-grid"></div>
+  </main>
+</div>
+
+<div class="form-overlay" id="form-overlay">
+  <div class="form-card">
+    <h2 id="form-title">Add Banner</h2>
+    <form id="banner-form" novalidate>
+      <input type="hidden" id="banner-id">
+      <div class="field"><label>Title</label><input id="b-title" required></div>
+      <div class="field"><label>Subtitle</label><input id="b-subtitle"></div>
+      <div class="field"><label>Link URL</label><input id="b-link" placeholder="/shop.html"></div>
+      <div class="field"><label>Banner Image</label><input type="file" id="b-image" accept="image/*"></div>
+      <div class="field">
+        <label>Type</label>
+        <select id="b-type" style="width:100%;padding:12px;border:2px solid var(--line);border-radius:var(--radius-sm);background:var(--cream-soft);">
+          <option value="hero">Hero</option>
+          <option value="flash-sale">Flash Sale</option>
+          <option value="category">Category</option>
+          <option value="offer">Offer</option>
+          <option value="popup">Popup</option>
+        </select>
+      </div>
+      <div class="field"><label>Sort Order</label><input type="number" id="b-sort" value="0"></div>
+      <div class="field" style="display:flex;gap:16px;align-items:center;">
+        <label style="display:flex;gap:6px;align-items:center;"><input type="checkbox" id="b-active" checked style="width:auto;"> Active</label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-admin-primary" style="width:auto;padding:12px 28px;">Save Banner</button>
+        <button type="button" class="btn-sm" onclick="closeForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="admin.js"></script>
+<script>
+  if (!requireAdmin()) throw new Error('Not admin');
+  document.getElementById('sidebar').innerHTML = renderSidebar();
+
+  async function loadBanners() {
+    try {
+      const res = await adminFetch(`${API_BASE}/banners/admin/all`);
+      const data = await res.json();
+      const banners = data.banners || [];
+
+      document.getElementById('banner-grid').innerHTML = banners.length
+        ? banners.map(b => `
+          <div class="banner-card">
+            <div class="preview">${b.image?.url ? `<img src="${b.image.url}" alt="${b.title}">` : '🖼️'}</div>
+            <div class="details">
+              <h3>${b.title}</h3>
+              <div class="meta">${b.type} · ${b.isActive ? '🟢 Active' : '🔴 Inactive'} · Sort: ${b.sortOrder || 0}</div>
+              <div class="actions">
+                <button class="btn-sm" onclick="editBanner('${b._id}')">Edit</button>
+                <button class="btn-sm danger" onclick="deleteBanner('${b._id}')">Delete</button>
+              </div>
+            </div>
+          </div>
+        `).join('')
+        : '<p style="color:var(--ink-soft);text-align:center;grid-column:1/-1;">No banners yet. Click "+ Add Banner" to create one.</p>';
+    } catch (err) {
+      document.getElementById('banner-grid').innerHTML = '<p style="color:var(--red)">Failed to load banners</p>';
+    }
+  }
+
+  function openForm(banner = null) {
+    document.getElementById('form-title').textContent = banner ? 'Edit Banner' : 'Add Banner';
+    document.getElementById('banner-id').value = banner?._id || '';
+    document.getElementById('b-title').value = banner?.title || '';
+    document.getElementById('b-subtitle').value = banner?.subtitle || '';
+    document.getElementById('b-link').value = banner?.link || '';
+    document.getElementById('b-type').value = banner?.type || 'hero';
+    document.getElementById('b-sort').value = banner?.sortOrder || 0;
+    document.getElementById('b-active').checked = banner?.isActive ?? true;
+    document.getElementById('b-image').value = '';
+    document.getElementById('form-overlay').classList.add('open');
+  }
+  function closeForm() { document.getElementById('form-overlay').classList.remove('open'); }
+
+  async function editBanner(id) {
+    const res = await adminFetch(`${API_BASE}/banners/${id}`);
+    const data = await res.json();
+    if (data.banner) openForm(data.banner);
+  }
+
+  async function deleteBanner(id) {
+    if (!confirm('Delete this banner?')) return;
+    await adminFetch(`${API_BASE}/banners/${id}`, { method: 'DELETE' });
+    loadBanners();
+  }
+
+  document.getElementById('banner-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('banner-id').value;
+    
+    const formData = new FormData();
+    formData.append('title', document.getElementById('b-title').value);
+    formData.append('subtitle', document.getElementById('b-subtitle').value);
+    formData.append('link', document.getElementById('b-link').value);
+    formData.append('type', document.getElementById('b-type').value);
+    formData.append('sortOrder', document.getElementById('b-sort').value);
+    formData.append('isActive', document.getElementById('b-active').checked);
+
+    const imgFile = document.getElementById('b-image').files[0];
+    if (imgFile) formData.append('image', imgFile);
+
+    const url = id ? `${API_BASE}/banners/${id}` : `${API_BASE}/banners`;
+    const method = id ? 'PUT' : 'POST';
+    const res = await adminFetch(url, { method, body: formData });
+    const data = await res.json();
+    if (data.success || data.banner) { closeForm(); loadBanners(); }
+    else alert(data.message || 'Failed to save banner');
+  });
+
+  document.getElementById('form-overlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeForm(); });
+  loadBanners();
+</script>
+</body>
+</html>

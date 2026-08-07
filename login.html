@@ -83,10 +83,11 @@
 <script src="script.js"></script>
 <script>
   const form = document.getElementById('login-form');
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const email = document.getElementById('email');
     const password = document.getElementById('password');
+    const submitBtn = form.querySelector('button[type="submit"]');
     let valid = true;
 
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value);
@@ -99,9 +100,18 @@
 
     if(!valid) return;
 
-    logIn(email.value, password.value);
-    showToast(`Welcome back, ${email.value.split('@')[0]}!`);
-    setTimeout(() => location.href = 'account.html', 700);
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Logging in…';
+
+    try {
+      const user = await logIn(email.value, password.value);
+      showToast(`Welcome back, ${user.name || email.value.split('@')[0]}!`);
+      setTimeout(() => location.href = 'account.html', 700);
+    } catch (err) {
+      showToast(err.message || 'Login failed. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Log in <span class="btn-dot">→</span>';
+    }
   });
 </script>
 </body>

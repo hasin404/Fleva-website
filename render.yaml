@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: fleva-website
+    env: node
+    region: singapore
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        value: mongodb+srv://abrar420240_db_user:NaLRCSO6gYnXORtG@fleva.bg54fva.mongodb.net/fleva?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        value: fleva_super_secret_jwt_key_2026_prod
+      - key: JWT_REFRESH_SECRET
+        value: fleva_super_secret_refresh_key_2026_prod

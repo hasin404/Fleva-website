@@ -41,9 +41,7 @@
     <a href="index.html" class="logo">FLEVA</a>
     <nav class="nav-main">
       <a href="shop.html">Shop</a>
-      <a href="shop.html">Explore</a>
       <a href="about.html">Our Story</a>
-      <a href="shop.html">Fleva World</a>
       <a href="account.html">Rewards</a>
     </nav>
     <div class="header-icons">
@@ -93,7 +91,14 @@
     </div>
     <div class="footer-bottom">
       <span class="footer-copy">© 2026 FLEVA. All rights reserved.</span>
-      <div class="footer-social"><a href="#">IG</a><a href="#">TT</a><a href="#">YT</a></div>
+      <div class="footer-social">
+  <a href="https://instagram.com/flevaworld" aria-label="Instagram" target="_blank" rel="noopener noreferrer">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+  </a>
+  <a href="https://facebook.com/flevaworld" aria-label="Facebook" target="_blank" rel="noopener noreferrer">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3.81l.39-4h-4.2V7a1 1 0 0 1 1-1h3z"></path></svg>
+  </a>
+</div>
     </div>
   </div>
 </footer>
@@ -102,46 +107,95 @@
 <script>
   const params = new URLSearchParams(location.search);
   const id = params.get('id') || PRODUCTS[0].id;
-  const p = PRODUCTS.find(x => x.id === id) || PRODUCTS[0];
-  document.title = p.name + " — FLEVA";
-  document.getElementById('crumb-name').textContent = p.name;
 
-  let qty = 1;
-  function renderPDP(){
-    document.getElementById('pdp-root').innerHTML = `
-      <div class="pdp-media">${productMedia(p)}</div>
-      <div>
-        <span class="pdp-cat">${p.category}</span>
-        <h1 class="pdp-title">${p.name}</h1>
-        <div class="pdp-tag">${p.tag}</div>
-        <div class="pdp-price">৳${p.price}</div>
-        <p class="pdp-desc">${p.desc}</p>
-        <div class="qty-row">
-          <div class="qty-stepper">
-            <button id="qty-minus" aria-label="Decrease quantity">−</button>
-            <span id="qty-val">${qty}</span>
-            <button id="qty-plus" aria-label="Increase quantity">+</button>
+  function initPDP() {
+    const p = PRODUCTS.find(x => x.id === id) || PRODUCTS[0];
+    document.title = p.name + " — FLEVA";
+    document.getElementById('crumb-name').textContent = p.name;
+
+    let qty = 1;
+    function renderPDP(){
+      document.getElementById('pdp-root').innerHTML = `
+        <div class="pdp-media">${productMedia(p)}</div>
+        <div>
+          <span class="pdp-cat">${p.category}</span>
+          <h1 class="pdp-title">${p.name}</h1>
+          <div class="pdp-tag">${p.tag}</div>
+          <div class="pdp-price">${p.discountPrice ? `<span style="text-decoration:line-through;opacity:0.5;margin-right:8px;">৳${p.price}</span>৳${p.discountPrice}` : `৳${p.price}`}</div>
+          <p class="pdp-desc">${p.desc}</p>
+          ${p.rating ? `<div style="font-size:0.82rem;color:var(--ink-soft);margin-bottom:8px;">⭐ ${p.rating} (${p.numReviews || 0} review${p.numReviews !== 1 ? 's' : ''})</div>` : ''}
+          ${p.availability === 'pre-order' ? `<div style="font-size:0.78rem;margin-bottom:14px;color:var(--lime);font-weight:700;background:var(--ink);display:inline-block;padding:2px 8px;border-radius:4px;">Pre-Order</div>` : (p.stock !== undefined ? `<div style="font-size:0.78rem;margin-bottom:14px;color:${p.stock > 5 ? 'var(--ink-soft)' : 'var(--pink-deep)'}">${p.stock > 0 ? (p.stock <= 5 ? `Only ${p.stock} left!` : 'In stock') : 'Out of stock'}</div>` : '')}
+          <div class="qty-row">
+            <div class="qty-stepper">
+              <button id="qty-minus" aria-label="Decrease quantity">−</button>
+              <span id="qty-val">${qty}</span>
+              <button id="qty-plus" aria-label="Increase quantity">+</button>
+            </div>
           </div>
-        </div>
-        <div class="pdp-actions">
-          <button class="btn btn-primary" id="add-btn">Add to cart <span class="btn-dot">🛒</span></button>
-          <a href="checkout.html" class="btn btn-outline" id="buy-now">Buy now</a>
-        </div>
-        <div class="pdp-meta">
-          <div><b>Shipping</b><span>Delivered across Bangladesh, 2–5 business days.</span></div>
-          <div><b>Payment</b><span>bKash, Nagad, or cash on delivery.</span></div>
-          <div><b>Shelf life</b><span>12 months unopened, stored in a cool dry place.</span></div>
-        </div>
-      </div>`;
+          <div class="pdp-actions">
+            ${(() => {
+              const isAvail = (p.availability === 'in-stock' && p.stock > 0) || (p.availability === 'pre-order');
+              return `
+              <button class="btn btn-primary" id="add-btn" ${!isAvail ? 'disabled style="opacity:0.5"' : ''}>${p.availability === 'pre-order' ? 'Pre-Order Now' : 'Add to cart'} <span class="btn-dot">🛒</span></button>
+              <a href="checkout.html" class="btn btn-outline" id="buy-now" ${!isAvail ? 'style="pointer-events:none;opacity:0.5;"' : ''}>Buy now</a>
+              `;
+            })()}
+          </div>
+          <div class="pdp-meta">
+            <div><b>Shipping</b><span>Delivered across Bangladesh, 2–5 business days.</span></div>
+            <div><b>Payment</b><span>bKash, Nagad, or cash on delivery.</span></div>
+            <div><b>Shelf life</b><span>12 months unopened, stored in a cool dry place.</span></div>
+          </div>
+        </div>`;
 
-    document.getElementById('qty-minus').onclick = () => { qty = Math.max(1, qty-1); document.getElementById('qty-val').textContent = qty; };
-    document.getElementById('qty-plus').onclick = () => { qty += 1; document.getElementById('qty-val').textContent = qty; };
-    document.getElementById('add-btn').onclick = () => addToCart(p.id, qty);
-    document.getElementById('buy-now').onclick = () => addToCart(p.id, qty);
+      document.getElementById('qty-minus').onclick = () => { qty = Math.max(1, qty-1); document.getElementById('qty-val').textContent = qty; };
+      document.getElementById('qty-plus').onclick = () => { qty += 1; document.getElementById('qty-val').textContent = qty; };
+      document.getElementById('add-btn').onclick = () => addToCart(p.id, qty);
+      document.getElementById('buy-now').onclick = () => addToCart(p.id, qty);
+    }
+    renderPDP();
+
+    document.getElementById('related-grid').innerHTML = PRODUCTS.filter(x=>x.id!==p.id).slice(0,4).map(renderProductCard).join('');
+
+    // Load reviews from API
+    if (p._id) {
+      loadReviews(p._id);
+    }
   }
-  renderPDP();
 
-  document.getElementById('related-grid').innerHTML = PRODUCTS.filter(x=>x.id!==p.id).slice(0,4).map(renderProductCard).join('');
+  async function loadReviews(productId) {
+    try {
+      const res = await fetch(`${API_BASE}/reviews/${productId}`);
+      const data = await res.json();
+      if (data.reviews && data.reviews.length > 0) {
+        const reviewsSection = document.createElement('section');
+        reviewsSection.className = 'section';
+        reviewsSection.innerHTML = `<div class="wrap">
+          <h2 style="font-size:1.4rem;margin-bottom:20px;">Customer Reviews</h2>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            ${data.reviews.map(r => `
+              <div style="background:var(--cream-soft);border-radius:var(--radius-sm);padding:20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                  <strong style="font-size:0.9rem;">${r.user?.name || 'Anonymous'}</strong>
+                  <span style="font-size:0.78rem;color:var(--ink-soft);">${'⭐'.repeat(r.rating)}</span>
+                </div>
+                ${r.title ? `<div style="font-weight:600;margin-bottom:4px;">${r.title}</div>` : ''}
+                <p style="font-size:0.85rem;color:var(--ink-soft);">${r.comment}</p>
+                ${r.isVerifiedPurchase ? '<span style="font-size:0.7rem;color:var(--plum);font-weight:600;">✓ Verified Purchase</span>' : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+        // Insert before footer
+        const footer = document.querySelector('.site-footer');
+        footer.parentNode.insertBefore(reviewsSection, footer);
+      }
+    } catch (e) { /* silent */ }
+  }
+
+  initPDP();
+  window.addEventListener('products-loaded', initPDP);
 </script>
+<script src="chat-widget.js"></script>
 </body>
 </html>
