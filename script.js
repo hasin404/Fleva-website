@@ -258,6 +258,7 @@ async function loadProducts() {
       const data = await res.json();
       if (data.products && data.products.length > 0) {
         // Map API products to frontend format
+        const formatUrl = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
         PRODUCTS = data.products.map(p => ({
           id: p.slug || p._id,
           _id: p._id,
@@ -268,7 +269,7 @@ async function loadProducts() {
           tag: p.tag || '',
           color: p.color || '#16140F',
           accent: p.accent || 'var(--lime)',
-          image: p.images?.[0]?.url || '',
+          image: formatUrl(p.images?.[0]?.url || ''),
           desc: p.description || '',
           stock: p.stock,
           availability: p.availability || 'in-stock',
@@ -846,6 +847,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadStorefront();
   await loadProducts();
   await loadBanners();
+  window.dispatchEvent(new CustomEvent('products-loaded'));
   document.dispatchEvent(new CustomEvent('products-loaded'));
 });
 
