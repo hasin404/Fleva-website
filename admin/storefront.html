@@ -264,17 +264,18 @@
         document.getElementById('hero-btn-link').value = data.storefront.heroBtnLink || 'shop.html';
         document.getElementById('delivery-fee').value = data.storefront.deliveryFee ?? 80;
         
-        if (data.storefront.heroImage1) document.getElementById('preview-1').src = `/${data.storefront.heroImage1}`;
-        if (data.storefront.heroImage2) document.getElementById('preview-2').src = `/${data.storefront.heroImage2}`;
+        const formatImg = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
+        if (data.storefront.heroImage1) document.getElementById('preview-1').src = formatImg(data.storefront.heroImage1);
+        if (data.storefront.heroImage2) document.getElementById('preview-2').src = formatImg(data.storefront.heroImage2);
         
-        if (data.storefront.cravingImg1) document.getElementById('preview-craving-1').src = `/${data.storefront.cravingImg1}`;
-        if (data.storefront.cravingImg2) document.getElementById('preview-craving-2').src = `/${data.storefront.cravingImg2}`;
-        if (data.storefront.cravingImg3) document.getElementById('preview-craving-3').src = `/${data.storefront.cravingImg3}`;
-        if (data.storefront.cravingImgMain) document.getElementById('preview-craving-main').src = `/${data.storefront.cravingImgMain}`;
+        if (data.storefront.cravingImg1) document.getElementById('preview-craving-1').src = formatImg(data.storefront.cravingImg1);
+        if (data.storefront.cravingImg2) document.getElementById('preview-craving-2').src = formatImg(data.storefront.cravingImg2);
+        if (data.storefront.cravingImg3) document.getElementById('preview-craving-3').src = formatImg(data.storefront.cravingImg3);
+        if (data.storefront.cravingImgMain) document.getElementById('preview-craving-main').src = formatImg(data.storefront.cravingImgMain);
 
         for (let i = 1; i <= 7; i++) {
           if (data.storefront[`heroFloat${i}`]) {
-            document.getElementById(`preview-hf-${i}`).src = `/${data.storefront[`heroFloat${i}`]}`;
+            document.getElementById(`preview-hf-${i}`).src = formatImg(data.storefront[`heroFloat${i}`]);
           }
         }
 
