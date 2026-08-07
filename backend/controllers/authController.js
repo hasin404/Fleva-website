@@ -177,7 +177,8 @@ exports.refreshToken = async (req, res, next) => {
     // Verify refresh token
     let decoded;
     try {
-      decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+      const secret = process.env.JWT_REFRESH_SECRET || 'fleva_dev_refresh_secret_change_in_production';
+      decoded = jwt.verify(token, secret);
     } catch (err) {
       clearRefreshCookie(res);
       return res.status(401).json({ success: false, message: 'Invalid refresh token', code: 'INVALID_REFRESH_TOKEN' });

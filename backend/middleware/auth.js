@@ -22,7 +22,8 @@ const protect = async (req, res, next) => {
     }
 
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const secret = process.env.JWT_SECRET || 'fleva_dev_jwt_secret_change_in_production';
+    const decoded = jwt.verify(token, secret);
 
     // Get user from DB
     const user = await User.findById(decoded.id);
@@ -54,7 +55,8 @@ const optionalAuth = async (req, res, next) => {
       token = req.headers.authorization.split(' ')[1];
     }
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const secret = process.env.JWT_SECRET || 'fleva_dev_jwt_secret_change_in_production';
+      const decoded = jwt.verify(token, secret);
       req.user = await User.findById(decoded.id);
     }
   } catch (err) {
