@@ -106,16 +106,22 @@
 <script src="script.js"></script>
 <script>
   const params = new URLSearchParams(location.search);
-  const id = params.get('id') || PRODUCTS[0].id;
+  const targetId = params.get('id') || params.get('slug');
 
   function initPDP() {
-    const p = PRODUCTS.find(x => x.id === id) || PRODUCTS[0];
+    if (!PRODUCTS || !PRODUCTS.length) return;
+    const p = (typeof findProduct === 'function' ? findProduct(targetId) : null) || PRODUCTS.find(x => x.id === targetId || x._id === targetId || x.slug === targetId) || PRODUCTS[0];
+    if (!p) return;
+
     document.title = p.name + " — FLEVA";
-    document.getElementById('crumb-name').textContent = p.name;
+    const crumbEl = document.getElementById('crumb-name');
+    if (crumbEl) crumbEl.textContent = p.name;
 
     let qty = 1;
     function renderPDP(){
-      document.getElementById('pdp-root').innerHTML = `
+      const pdpRoot = document.getElementById('pdp-root');
+      if (!pdpRoot) return;
+      pdpRoot.innerHTML = `
         <div class="pdp-media">${productMedia(p)}</div>
         <div>
           <span class="pdp-cat">${p.category}</span>
@@ -134,7 +140,7 @@
           </div>
           <div class="pdp-actions">
             ${(() => {
-              const isAvail = (p.availability === 'in-stock' && p.stock > 0) || (p.availability === 'pre-order');
+              const isAvail = !p.availability || p.availability === 'in-stock' || p.availability === 'pre-order' || (p.stock !== undefined && p.stock > 0);
               return `
               <button class="btn btn-primary" id="add-btn" ${!isAvail ? 'disabled style="opacity:0.5"' : ''}>${p.availability === 'pre-order' ? 'Pre-Order Now' : 'Add to cart'} <span class="btn-dot">🛒</span></button>
               <a href="checkout.html" class="btn btn-outline" id="buy-now" ${!isAvail ? 'style="pointer-events:none;opacity:0.5;"' : ''}>Buy now</a>
