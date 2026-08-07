@@ -905,11 +905,6 @@ function initHero3DCarousel() {
     });
   });
 
-  if (stage) {
-    stage.addEventListener('mouseenter', stopAutoPlay);
-    stage.addEventListener('mouseleave', startAutoPlay);
-  }
-
   updateCarousel();
   startAutoPlay();
 }
