@@ -773,114 +773,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.dispatchEvent(new Event('products-loaded'));
 });
 
-/* ==========================================================================
-   AI Chat Widget Logic
-   ========================================================================== */
-function initAIChatWidget() {
-  if (document.getElementById('ai-widget-btn')) return;
-
-  const btn = document.createElement('button');
-  btn.id = 'ai-widget-btn';
-  btn.className = 'ai-widget-btn';
-  btn.innerHTML = '✨';
-  btn.setAttribute('aria-label', 'Open AI Chat');
-
-  const chatWin = document.createElement('div');
-  chatWin.id = 'ai-chat-window';
-  chatWin.className = 'ai-chat-window';
-  chatWin.innerHTML = `
-    <div class="ai-chat-header">
-      <h3>FLEVA Support</h3>
-      <button class="ai-chat-close" id="ai-chat-close">✕</button>
-    </div>
-    <div class="ai-chat-messages" id="ai-chat-messages">
-      <div class="ai-msg bot">Hi there! 👋 I'm the FLEVA Assistant. How can I help you today?</div>
-    </div>
-    <div class="ai-suggestions" id="ai-suggestions">
-      <button class="ai-chip">🚚 Shipping Policy</button>
-      <button class="ai-chip">📞 Contact Info</button>
-      <button class="ai-chip">🔥 Best Sellers</button>
-      <button class="ai-chip">🔄 Returns</button>
-    </div>
-    <form class="ai-chat-input" id="ai-chat-form">
-      <input type="text" id="ai-chat-input" placeholder="Ask about shipping, products..." autocomplete="off">
-      <button type="submit">↑</button>
-    </form>
-  `;
-
-  document.body.appendChild(btn);
-  document.body.appendChild(chatWin);
-
-  const messagesDiv = document.getElementById('ai-chat-messages');
-  const chatForm = document.getElementById('ai-chat-form');
-  const chatInput = document.getElementById('ai-chat-input');
-
-  btn.addEventListener('click', () => {
-    chatWin.classList.add('open');
-    chatInput.focus();
-    btn.style.display = 'none';
-  });
-
-  document.getElementById('ai-chat-close').addEventListener('click', () => {
-    chatWin.classList.remove('open');
-    btn.style.display = 'flex';
-  });
-
-  function addMessage(text, sender) {
-    const msg = document.createElement('div');
-    msg.className = 'ai-msg ' + sender;
-    msg.textContent = text;
-    messagesDiv.appendChild(msg);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-    return msg;
-  }
-
-  // Handle suggestion chips
-  document.getElementById('ai-suggestions').addEventListener('click', (e) => {
-    if (e.target.classList.contains('ai-chip')) {
-      const text = e.target.textContent;
-      chatInput.value = text;
-      chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
-      // Optional: hide suggestions after first click
-      // document.getElementById('ai-suggestions').style.display = 'none';
-    }
-  });
-
-  let aiSessionId = sessionStorage.getItem('aiSessionId') || null;
-
-  chatForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const text = chatInput.value.trim();
-    if (!text) return;
-
-    addMessage(text, 'user');
-    chatInput.value = '';
-
-    const typingMsg = addMessage('Typing...', 'bot typing');
-
-    try {
-      const res = await fetch(API_BASE + '/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, sessionId: aiSessionId })
-      });
-      const data = await res.json();
-      
-      typingMsg.remove();
-      if (data.success) {
-        aiSessionId = data.sessionId;
-        sessionStorage.setItem('aiSessionId', aiSessionId);
-        addMessage(data.reply, 'bot');
-      } else {
-        addMessage("Oops, I couldn't reach the server right now.", 'bot');
-      }
-    } catch (err) {
-      typingMsg.remove();
-      addMessage("Connection error. Please try again.", 'bot');
-    }
-  });
-}
-
 /* ---- Version 2: 3D Hero Carousel Controller ---- */
 let heroCarouselIndex = 0;
 let heroCarouselTimer = null;
@@ -952,7 +844,6 @@ function initHero3DCarousel() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  if (typeof initAIChatWidget === 'function') initAIChatWidget();
   initHero3DCarousel();
   await loadStorefront();
   await loadProducts();
