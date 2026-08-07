@@ -137,8 +137,116 @@ const STATIC_PRODUCTS = [
   },
 ];
 
-// PRODUCTS will be populated from API; static as initial fallback
-let PRODUCTS = [...STATIC_PRODUCTS];
+/* ---- Storefront dynamic settings from API ---- */
+let STOREFRONT = null;
+
+async function loadStorefront() {
+  try {
+    const res = await fetch(`${API_BASE}/storefront?t=${Date.now()}`, { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.storefront) {
+        STOREFRONT = data.storefront;
+
+        const formatUrl = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
+
+        // Update Hero Title, Subtitle, Button
+        const hTitle = document.getElementById('hero-title');
+        const hLede = document.getElementById('hero-lede');
+        const hBtn = document.getElementById('hero-btn');
+
+        if (hTitle && STOREFRONT.heroTitle) hTitle.innerHTML = STOREFRONT.heroTitle;
+        if (hLede && STOREFRONT.heroSubtitle) hLede.innerHTML = STOREFRONT.heroSubtitle;
+        if (hBtn) {
+          if (STOREFRONT.heroBtnText && hBtn.childNodes[0]) hBtn.childNodes[0].textContent = STOREFRONT.heroBtnText + ' ';
+          if (STOREFRONT.heroBtnLink) hBtn.href = STOREFRONT.heroBtnLink;
+        }
+
+        // Delivery fee
+        if (STOREFRONT.deliveryFee !== undefined) {
+          window.DELIVERY_FEE = STOREFRONT.deliveryFee;
+        }
+
+        // Hero Main Pack Images
+        const hImg1 = document.getElementById('hero-img-1');
+        const hImg2 = document.getElementById('hero-img-2');
+        if (hImg1 && STOREFRONT.heroImage1) hImg1.src = formatUrl(STOREFRONT.heroImage1);
+        if (hImg2 && STOREFRONT.heroImage2) hImg2.src = formatUrl(STOREFRONT.heroImage2);
+
+        // Hero Floating Fruits
+        const floatContainer = document.getElementById('hero-floating-container');
+        if (floatContainer) {
+          let floatHTML = '';
+          const defaultCoords = [
+            { top: '4%', left: '8%', width: '16%' },
+            { top: '12%', right: '10%', width: '18%' },
+            { bottom: '15%', left: '4%', width: '15%' },
+            { bottom: '10%', right: '6%', width: '17%' },
+            { top: '40%', left: '2%', width: '14%' },
+            { top: '45%', right: '2%', width: '15%' },
+            { top: '25%', left: '38%', width: '12%' },
+          ];
+          for (let i = 1; i <= 7; i++) {
+            const imgKey = `heroFloat${i}`;
+            if (STOREFRONT[imgKey]) {
+              const pos = defaultCoords[i - 1] || defaultCoords[0];
+              const styleStr = Object.entries(pos).map(([k, v]) => `${k}:${v}`).join(';');
+              floatHTML += `<div class="float-item" style="position:absolute;${styleStr};z-index:2;"><img src="${formatUrl(STOREFRONT[imgKey])}" style="width:100%;height:auto;filter:drop-shadow(0 10px 15px rgba(0,0,0,0.2));" alt="fruit"></div>`;
+            }
+          }
+          if (floatHTML) floatContainer.innerHTML = floatHTML;
+        }
+
+        // Craving Images
+        const crvPlate = document.querySelector('.craving-visual');
+        if (crvPlate) {
+          const c1 = crvPlate.querySelector('.float-item:nth-child(2) img');
+          const c2 = crvPlate.querySelector('.float-item:nth-child(3) img');
+          const c3 = crvPlate.querySelector('.float-item:nth-child(4) img');
+          const cMain = crvPlate.querySelector('div[style*="inset:30% 26%"] img');
+
+          if (c1 && STOREFRONT.cravingImg1) c1.src = formatUrl(STOREFRONT.cravingImg1);
+          if (c2 && STOREFRONT.cravingImg2) c2.src = formatUrl(STOREFRONT.cravingImg2);
+          if (c3 && STOREFRONT.cravingImg3) c3.src = formatUrl(STOREFRONT.cravingImg3);
+          if (cMain && STOREFRONT.cravingImgMain) cMain.src = formatUrl(STOREFRONT.cravingImgMain);
+        }
+
+        // Craving click handlers
+        setupCravingClickHandlers(STOREFRONT.cravings);
+      }
+    }
+  } catch (e) {
+    console.warn('Storefront API load failed', e);
+  }
+}
+
+function setupCravingClickHandlers(cravingsMapping) {
+  const buttons = document.querySelectorAll('#craving-choices button');
+  if (!buttons.length) return;
+
+  const keyMap = {
+    'energy': 'energy',
+    'fruity': 'fruity',
+    'guilt-free': 'guiltFree',
+    'surprise': 'surpriseMe'
+  };
+
+  buttons.forEach(btn => {
+    btn.onclick = () => {
+      const type = btn.getAttribute('data-craving');
+      const mappedKey = keyMap[type];
+      if (cravingsMapping && cravingsMapping[mappedKey]) {
+        const prod = cravingsMapping[mappedKey];
+        const prodId = typeof prod === 'object' ? (prod.slug || prod._id) : prod;
+        if (prodId) {
+          window.location.href = `product-detail.html?id=${prodId}`;
+          return;
+        }
+      }
+      window.location.href = 'shop.html';
+    };
+  });
+}
 
 /**
  * Load products from the API. Falls back to static data.
@@ -733,5 +841,11 @@ function initAIChatWidget() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', initAIChatWidget);
+document.addEventListener('DOMContentLoaded', async () => {
+  if (typeof initAIChatWidget === 'function') initAIChatWidget();
+  await loadStorefront();
+  await loadProducts();
+  await loadBanners();
+  document.dispatchEvent(new CustomEvent('products-loaded'));
+});
 
