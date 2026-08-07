@@ -844,8 +844,79 @@ function initAIChatWidget() {
   });
 }
 
+/* ---- Version 2: 3D Hero Carousel Controller ---- */
+let heroCarouselIndex = 0;
+let heroCarouselTimer = null;
+
+function initHero3DCarousel() {
+  const cards = [
+    document.getElementById('card-slot-1'),
+    document.getElementById('card-slot-2'),
+    document.getElementById('card-slot-3')
+  ].filter(Boolean);
+
+  const indicators = document.querySelectorAll('#carousel-indicators .indicator');
+  const stage = document.getElementById('carousel-3d-stage');
+
+  if (cards.length < 3) return;
+
+  const positions = ['pos-center', 'pos-right-back', 'pos-left-back'];
+
+  function updateCarousel() {
+    cards.forEach((card, i) => {
+      const posIndex = (i - heroCarouselIndex + 3) % 3;
+      card.className = `carousel-3d-card ${positions[posIndex]}`;
+    });
+
+    indicators.forEach((ind, idx) => {
+      if (ind) ind.classList.toggle('active', idx === heroCarouselIndex);
+    });
+  }
+
+  function nextSlide() {
+    heroCarouselIndex = (heroCarouselIndex + 1) % 3;
+    updateCarousel();
+  }
+
+  function startAutoPlay() {
+    stopAutoPlay();
+    heroCarouselTimer = setInterval(nextSlide, 2600);
+  }
+
+  function stopAutoPlay() {
+    if (heroCarouselTimer) clearInterval(heroCarouselTimer);
+  }
+
+  // Click on background card shifts it to front center stage
+  cards.forEach((card, idx) => {
+    card.addEventListener('click', () => {
+      heroCarouselIndex = idx;
+      updateCarousel();
+      startAutoPlay();
+    });
+  });
+
+  // Click on indicators
+  indicators.forEach((ind, idx) => {
+    ind.addEventListener('click', () => {
+      heroCarouselIndex = idx;
+      updateCarousel();
+      startAutoPlay();
+    });
+  });
+
+  if (stage) {
+    stage.addEventListener('mouseenter', stopAutoPlay);
+    stage.addEventListener('mouseleave', startAutoPlay);
+  }
+
+  updateCarousel();
+  startAutoPlay();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   if (typeof initAIChatWidget === 'function') initAIChatWidget();
+  initHero3DCarousel();
   await loadStorefront();
   await loadProducts();
   await loadBanners();
