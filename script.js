@@ -356,8 +356,23 @@ function saveCart(cart) { saveLocalCart(cart); }
 
 function findProduct(id) {
   if (!id || !PRODUCTS || !PRODUCTS.length) return null;
-  const sId = String(id);
-  return PRODUCTS.find(p => String(p.id) === sId || String(p._id) === sId || String(p.slug) === sId) || null;
+  const sId = String(id).toLowerCase().trim();
+  const cleanStr = (str) => String(str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const targetClean = cleanStr(sId);
+
+  return PRODUCTS.find(p => {
+    if (!p) return false;
+    const pId = String(p.id || '').toLowerCase();
+    const pMongoId = String(p._id || '').toLowerCase();
+    const pSlug = String(p.slug || '').toLowerCase();
+    const pName = String(p.name || '').toLowerCase();
+
+    if (pId === sId || pMongoId === sId || pSlug === sId) return true;
+    if (cleanStr(pId) === targetClean || cleanStr(pSlug) === targetClean) return true;
+    if (targetClean.includes(cleanStr(pId)) || cleanStr(pId).includes(targetClean)) return true;
+    if (cleanStr(pName).includes(targetClean) || targetClean.includes(cleanStr(pName))) return true;
+    return false;
+  }) || PRODUCTS[0];
 }
 
 function addToCart(id, qty = 1) {
