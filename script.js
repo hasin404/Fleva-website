@@ -893,6 +893,11 @@ function initHero3DCarousel() {
     indicators.forEach((ind, idx) => {
       if (ind) ind.classList.toggle('active', idx === heroCarouselIndex);
     });
+
+    const glow = document.getElementById('hero-ambient-glow');
+    if (glow) {
+      glow.className = `hero-ambient-glow flavor-${heroCarouselIndex + 1}`;
+    }
   }
 
   function nextSlide() {
