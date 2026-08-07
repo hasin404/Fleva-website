@@ -77,8 +77,10 @@ const STATIC_PRODUCTS = [
     tag: "25G PROTEIN",
     color: "#7A4B26",
     accent: "var(--lime)",
-    image: "assets/products/protein-bars.png",
+    image: "/assets/products/protein-bars.png",
     desc: "A dense, chewy bar loaded with real nuts and dark chocolate. 25g of protein, zero guilt, all crunch.",
+    stock: 50,
+    availability: "in-stock",
   },
   {
     id: "freeze-dried-strawberry",
@@ -88,8 +90,10 @@ const STATIC_PRODUCTS = [
     tag: "100% REAL",
     color: "#D91C4A",
     accent: "var(--pink)",
-    image: "assets/products/freeze-dried-fruits.png",
+    image: "/assets/products/freeze-dried-fruits.png",
     desc: "Whole strawberries, freeze-dried to a light crunch. Nothing added, nothing hidden — just fruit.",
+    stock: 50,
+    availability: "in-stock",
   },
   {
     id: "choc-fruit-mix",
@@ -99,8 +103,10 @@ const STATIC_PRODUCTS = [
     tag: "SMALL BATCH",
     color: "#3A2418",
     accent: "var(--lime)",
-    image: "assets/products/chocolate-fruits.png",
+    image: "/assets/products/chocolate-fruits.png",
     desc: "Freeze-dried fruit dipped in real dark chocolate. Sweet, tart, and snappy in every bite.",
+    stock: 50,
+    availability: "in-stock",
   },
   {
     id: "tropical-fruit-chips",
@@ -110,8 +116,10 @@ const STATIC_PRODUCTS = [
     tag: "NO SUGAR ADDED",
     color: "#E0A72E",
     accent: "var(--plum)",
-    image: "assets/products/fruit-chips.png",
+    image: "/assets/products/fruit-chips.png",
     desc: "Kiwi, mango and banana, sliced and dried to a crisp. Tastes like sunshine, keeps like a snack.",
+    stock: 50,
+    availability: "in-stock",
   },
   {
     id: "berry-power-powder",
@@ -121,8 +129,10 @@ const STATIC_PRODUCTS = [
     tag: "1 JAR = 3KG FRUIT",
     color: "#6C2BD9",
     accent: "var(--pink)",
-    image: "assets/products/fruit-powders.png",
+    image: "/assets/products/fruit-powders.png",
     desc: "Concentrated freeze-dried berries, milled fine. Stir into yogurt, smoothies, or oats.",
+    stock: 50,
+    availability: "in-stock",
   },
   {
     id: "fleva-gift-box",
@@ -132,8 +142,10 @@ const STATIC_PRODUCTS = [
     tag: "6 SNACKS INSIDE",
     color: "#16140F",
     accent: "var(--lime)",
-    image: "assets/products/gift-boxes.png",
+    image: "/assets/products/gift-boxes.png",
     desc: "A curated box of our six favourites. Built for gifting, dangerously easy to keep for yourself.",
+    stock: 50,
+    availability: "in-stock",
   },
 ];
 
@@ -529,7 +541,7 @@ function productMedia(p) {
 }
 
 function renderProductCard(p) {
-  const isAvailable = (p.availability === 'in-stock' && p.stock > 0) || (p.availability === 'pre-order');
+  const isAvailable = !p.availability || p.availability === 'in-stock' || p.availability === 'pre-order' || (p.stock !== undefined && p.stock > 0);
   let badgeText = '';
   if (p.availability === 'out-of-stock' || (p.availability === 'in-stock' && p.stock <= 0)) badgeText = 'Out of Stock';
   else if (p.availability === 'pre-order') badgeText = 'Pre-Order';
