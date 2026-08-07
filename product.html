@@ -108,9 +108,11 @@
   const params = new URLSearchParams(location.search);
   const targetId = params.get('id') || params.get('slug');
 
-  function initPDP() {
-    if (!PRODUCTS || !PRODUCTS.length) return;
-    const p = (typeof findProduct === 'function' ? findProduct(targetId) : null) || PRODUCTS.find(x => x.id === targetId || x._id === targetId || x.slug === targetId) || PRODUCTS[0];
+  async function initPDP() {
+    if (!window.PRODUCTS || !PRODUCTS.length) {
+      if (typeof loadProducts === 'function') await loadProducts();
+    }
+    const p = (typeof findProduct === 'function' ? findProduct(targetId) : null) || (window.PRODUCTS && PRODUCTS.length ? PRODUCTS[0] : null);
     if (!p) return;
 
     document.title = p.name + " — FLEVA";
