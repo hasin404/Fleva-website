@@ -1,109 +1,116 @@
-# FLEVA - Real Fruits. Crazy Good.
+# 🍓 FLEVA — Real Fruits. Crazy Good.
 
-## 🚀 Project Overview
-FLEVA is a modern, highly responsive, full-stack e-commerce platform designed for selling premium freeze-dried fruit and protein snacks. The project successfully evolved from a static HTML/CSS prototype into a fully integrated, production-ready system featuring a dynamic customer storefront, a robust RESTful API backend, and a comprehensive Admin Dashboard.
-
----
-
-## 🏗️ System Architecture & Connectivity
-
-The architecture follows a decoupled client-server model, ensuring separation of concerns and high scalability.
-
-### 1. Database Layer (MongoDB & Mongoose)
-The absolute source of truth for the platform.
-- **Products & Inventory**: Stores all product metadata, pricing, stock levels, and image URLs.
-- **Users**: Securely stores customer and admin accounts, utilizing encrypted passwords and role-based access control (`user`, `admin`, `superadmin`).
-- **Orders**: Tracks customer carts converted to purchases, along with their fulfillment status (`pending`, `shipped`, `delivered`).
-- **Storefront Config**: A unique global document that manages dynamic UI settings, such as the floating hero images on the homepage, without requiring hardcoded HTML changes.
-
-### 2. Backend API Layer (Node.js & Express)
-The engine of the application, responsible for enforcing business rules, security, and data flow.
-- **Authentication System**: Uses dual-layered JWT (JSON Web Tokens). It validates admin access via HttpOnly cookies and `sessionStorage` tokens to prevent 403 Forbidden errors while keeping state secure.
-- **RESTful Endpoints**: Provides `/api/v1/...` routes. The frontend consumes public routes (e.g., fetching products, global search), while the Admin Panel consumes protected routes (e.g., updating inventory, viewing analytics).
-- **File Handling**: Manages image uploads (for products and dynamic hero floating elements) and serves them securely to the frontend.
-
-### 3. Customer Storefront (Frontend)
-Built with lightweight Vanilla JavaScript, HTML5, and CSS3 for lightning-fast performance.
-- **Dynamic Hydration**: Scripts (`script.js`) fetch data from the Backend API to dynamically build product grids, individual product pages (`shop.html`, `product.html`), and search results.
-- **Checkout & Cart**: The cart state is managed locally and synced with the backend during the checkout flow (`checkout.html`). It automatically calculates advance payments (e.g., 20% for pre-orders) and dynamic delivery fees.
-- **Responsive Design**: Entirely overhauled to support fluid typography, mobile-first stacking grids, and compact overlays (like the Search Bar) ensuring a premium experience on both ultra-wide monitors and small smartphones.
-
-### 4. Admin Dashboard (`/admin`)
-A bespoke, secure single-page application built for store managers.
-- **Real-time Management**: Interacts directly with protected backend APIs to manage CRUD operations for Products, Orders, Customers, Banners, and Coupons.
-- **Storefront Customization**: Allows admins to upload real fruit images directly into the 7 slots of the homepage Hero section, syncing instantly with the customer-facing site.
-- **Responsive & Ergonomic**: Features a mobile-friendly slide-out drawer navigation, top-right profile toggles, and horizontally scrolling data tables so the store can be managed from a phone on the go.
+> **Full-Stack Premium E-Commerce Platform** featuring a 3D Continuous Product Showcase, Dynamic Ambient Flavor Color Glow, Interactive Cursor-Tracking Authentication Pages, and a Bespoke Admin Management System.
 
 ---
 
-## 🗺️ Implementation Roadmap (Accomplished)
+## 🌐 Live Production Links
 
-1. **Phase 1: Foundation & Auth**
-   - Established the Node/Express backend and MongoDB connection.
-   - Built the JWT authentication flow, isolating Admin vs. Customer scopes.
-   - Fixed token collision bugs (`403 Forbidden`) by strictly separating admin `sessionStorage` keys.
-
-2. **Phase 2: Product & Inventory Engine**
-   - Migrated hardcoded HTML products into MongoDB.
-   - Created the Product API and hydrated `shop.html` and `product.html`.
-   - Implemented pre-order logic, including custom 20% advance payment calculations inside the checkout flow.
-   - Engineered a robust Global Search feature with an interactive overlay.
-
-3. **Phase 3: Admin Dashboard Ecosystem**
-   - Built out the full suite of Admin panels (`dashboard.html`, `products.html`, `orders.html`, `customers.html`, `storefront.html`).
-   - Hooked up `admin.js` to securely fetch and mutate backend data.
-   - Allowed dynamic image uploads from the admin panel directly into the backend storage.
-
-4. **Phase 4: Responsive Design & Polish**
-   - Executed a comprehensive CSS overhaul across the entire platform.
-   - Transformed rigid desktop layouts into fluid, mobile-first grids.
-   - Compacted UI elements (Search bars, Checkout summaries, Admin tables) to ensure maximum screen real-estate usage on mobile devices.
-   - Implemented sleek side-drawer UI patterns for admin forms and navigation.
-   - Wired up dynamic footer links (Instagram/Facebook) and visual polish (floating real fruit hero images).
+* 🌐 **Live Website:** [https://fleva-website.vercel.app](https://fleva-website.vercel.app)
+* 🛍️ **Shop Catalog:** [https://fleva-website.vercel.app/shop.html](https://fleva-website.vercel.app/shop.html)
+* 🎁 **Product Details (PDP):** [https://fleva-website.vercel.app/product.html?id=fleva-starter-gift-box](https://fleva-website.vercel.app/product.html?id=fleva-starter-gift-box)
+* 🎨 **Admin Control Panel:** [https://fleva-website.vercel.app/admin](https://fleva-website.vercel.app/admin)
+* 📦 **GitHub Repository:** [https://github.com/hasin404/Fleva-website](https://github.com/hasin404/Fleva-website)
 
 ---
 
-## 🚀 Next Steps to Go Live (Production Roadmap)
+## ✨ Key Features & Version 2 Highlights
 
-To launch the site securely to the public, the following critical steps remain:
+### 1. 🌀 3D Continuous Product Showcase Carousel
+- **Non-Stop 3D Stage**: Smooth 2.6-second continuous rotation loop showcasing FLEVA's primary product packages (Pouch, Can, Fruit Chips) in 3D perspective depth (`transform-style: preserve-3d`).
+- **Dynamic Perspective Layout**: Responsive positioning optimized for wide desktop monitor layouts and mobile top-center stack views.
 
-### 1. Database Production Setup
-- **Migrate to MongoDB Atlas**: Move the database off local environments onto a managed, scalable cloud instance (MongoDB Atlas).
-- **Secure Credentials**: Store MongoDB URIs, JWT Secrets, and API keys inside a secure `.env` file instead of hardcoding them.
-- **Data Cleanup**: Purge all local/test data (fake products, test orders, dummy customers) and seed the production database with actual live inventory.
+### 2. 🌈 Dynamic Ambient Product Color Glow
+- **Deep 3D Layering**: Positioned at `-300px` background depth behind all product packages (`z-index: 0`).
+- **Flavor Color Morphing**: Smoothly transitions soft radial color glow as each product comes forward:
+  - 🍓 **Pouch**: Vibrant Strawberry Crimson Red/Pink (`#FF1E56`)
+  - 🍫 **Can**: Rich Chocolate Cocoa Amber (`#A0522D`)
+  - 🥭 **Fruit Chips**: Bright Mango Yellow-Orange (`#FF9900`)
 
-### 2. Authentication & Security Hardening
-- **Email/SMS Verification**: Hook up real authentication providers (like Twilio or Nodemailer) to verify customer identities during Sign-up.
-- **CORS Configuration**: Lock down the Express backend's CORS policy so it only accepts API requests from the exact live domain (e.g., `https://flevaworld.com`).
-- **HTTPS Enforcement**: Ensure cookies (especially JWT HttpOnly cookies) are strictly marked with `Secure: true` so they only transmit over encrypted SSL connections.
+### 3. 👀 Interactive Cursor-Tracking Authentication (Login & Signup)
+- **Googly Eye Tracking**: Embedded inside the dark visual panel of `login.html` and `signup.html`.
+- **Real-Time Physics**: Both eye pupils dynamically compute cursor angle and radius offset on mousemove, creating a playful, engaging user experience.
 
-### 3. Payment Gateway Integration
-- **Live Payments**: Replace the dummy local checkout system with live API keys for actual payment processors (e.g., Stripe for international cards, SSLCommerz for local Bangladesh transactions, and validated Cash on Delivery).
+### 4. 🛍️ Dynamic PDP (Product Detail Page) Engine
+- **Fuzzy Slug & ID Resolution**: Parses human-readable slugs (e.g. `?id=fleva-starter-gift-box`) and MongoDB ObjectIds seamlessly.
+- **Asynchronous Hydration**: Awaits catalog load to guarantee 100% render reliability without blank state flashes.
 
-### 4. Hosting & Actual Domain Binding
-- **Backend Deployment**: Host the Node/Express server on a robust platform (e.g., Render, Railway, or AWS).
-- **Frontend Deployment**: Deploy the static Vanilla JS frontend to a global CDN (e.g., Vercel, Netlify, or Firebase Hosting).
-- **Custom Domain Setup**: Purchase the official domain (e.g., `flevaworld.com`), point the DNS A/CNAME records to the frontend hosting provider, and enforce an SSL certificate (HTTPS) for the entire site.
+### 5. 🤖 Single Unified AI Chat Assistant
+- Embedded AI floating assistant widget (`chat-widget.js`) integrated on all pages for instant customer assistance.
 
+### 6. 🎨 Full-Featured Admin Control Panel (`/admin`)
+- **Dashboard & Analytics**: Real-time sales, order stats, customer metrics, and revenue charts.
+- **Full CRUD Management**: Products, Categories, Customer Accounts, Orders, Banners, and Coupons.
+- **Storefront Customizer**: Dynamic home banner and hero image configuration without touching code.
 
+---
 
+## 🏗️ System Architecture
 
+```
+[ Frontend: HTML5 / CSS3 / Vanilla JS ] 
+              │
+              ▼ (Serverless Express API Routes)
+[ Vercel API Gateway: /api/index.js ]
+              │
+              ▼
+[ Node.js & Express REST Backend ]
+              │
+              ▼
+[ Cloud Database: MongoDB Atlas Cluster ]
+```
 
+---
 
+## 🛠️ Tech Stack
 
+* **Frontend**: HTML5, Vanilla CSS3 (Custom Design System, Glassmorphism, 3D Transforms), Vanilla JavaScript (ES6+).
+* **Backend**: Node.js, Express.js REST API.
+* **Database**: MongoDB Atlas Cluster with Mongoose ODM.
+* **Authentication**: Dual-Layered JWT (JSON Web Tokens) with HttpOnly cookies & role-based access control (`user`, `admin`, `superadmin`).
+* **Deployment**: Vercel Serverless Functions (`/api/index.js`) & Vercel CDN.
 
+---
 
+## 💻 Local Development Setup
 
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/hasin404/Fleva-website.git
+   cd Fleva-website
+   ```
 
-How to Actually Go Live
-To make both Fleva World and the Admin Panel run on a live link, you have to host it in three separate pieces (as outlined in the README):
+2. **Install backend dependencies:**
+   ```bash
+   cd backend
+   npm install
+   ```
 
-The Database (MongoDB Atlas): You need to create a free account on MongoDB Atlas. This moves your database from your local laptop into the cloud so it runs 24/7.
+3. **Configure Environment Variables (`backend/.env`):**
+   ```env
+   PORT=3000
+   MONGO_URI=mongodb+srv://<username>:<password>@fleva.bg54fva.mongodb.net/fleva?retryWrites=true&w=majority
+   JWT_SECRET=your_jwt_secret_key
+   ```
 
-The Backend Server (Node.js): You cannot host this on GitHub. You must deploy the backend/ folder to a service like Render, Railway, or Heroku. These services provide a live URL (e.g., https://fleva-backend.onrender.com) and actually run your server.js code 24/7.
+4. **Start the local development server:**
+   ```bash
+   node server.js
+   ```
 
-The Frontend (Vercel or Netlify): Once your backend is live, you change the API_BASE URL in your frontend JavaScript from http://localhost:5000 to your new live backend URL. Then, you can deploy the rest of the project (the HTML/CSS/JS) to a service like Vercel or Netlify (which connects directly to your GitHub repo).
+5. **Open in browser:**
+   ```
+   http://localhost:3000
+   ```
 
-Once those three steps are done, you can link your custom domain (e.g., flevaworld.com) to Vercel, and the entire platform—storefront and admin panel—will be fully live! 
+---
 
+## 👤 Author
 
+**Hasin Abrar (`hasin404`)**
+- GitHub: [@hasin404](https://github.com/hasin404)
+- Email: `hasinabrrr@gmail.com`
+
+---
+
+© 2026 FLEVA. All rights reserved.
