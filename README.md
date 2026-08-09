@@ -1,7 +1,17 @@
 # FLEVA - Real Fruits. Crazy Good.
 
 ## 🚀 Project Overview
-FLEVA is a modern, highly responsive, full-stack e-commerce platform designed for selling premium freeze-dried fruit and protein snacks. The project successfully evolved from a static HTML/CSS prototype into a fully integrated, production-ready system featuring a dynamic customer storefront, a robust RESTful API backend, and a comprehensive Admin Dashboard.
+FLEVA is a modern, highly responsive, full-stack e-commerce platform designed for selling premium freeze-dried fruit and protein snacks. The project successfully evolved from a static HTML/CSS prototype into a fully integrated, production-ready system featuring a dynamic customer storefront, a 3D product showcase stage, an interactive authentication suite, a robust RESTful API backend, and a comprehensive Admin Dashboard.
+
+---
+
+## 🌐 Live Production Links
+
+* 🌐 **Live Storefront Website:** [https://fleva-website.vercel.app](https://fleva-website.vercel.app)
+* 🛍️ **Shop Catalog:** [https://fleva-website.vercel.app/shop.html](https://fleva-website.vercel.app/shop.html)
+* 🎁 **Product Details (PDP):** [https://fleva-website.vercel.app/product.html?id=fleva-starter-gift-box](https://fleva-website.vercel.app/product.html?id=fleva-starter-gift-box)
+* 🎨 **Admin Dashboard:** [https://fleva-website.vercel.app/admin](https://fleva-website.vercel.app/admin)
+* 📦 **GitHub Repository:** [https://github.com/hasin404/Fleva-website](https://github.com/hasin404/Fleva-website)
 
 ---
 
@@ -20,18 +30,20 @@ The absolute source of truth for the platform.
 The engine of the application, responsible for enforcing business rules, security, and data flow.
 - **Authentication System**: Uses dual-layered JWT (JSON Web Tokens). It validates admin access via HttpOnly cookies and `sessionStorage` tokens to prevent 403 Forbidden errors while keeping state secure.
 - **RESTful Endpoints**: Provides `/api/v1/...` routes. The frontend consumes public routes (e.g., fetching products, global search), while the Admin Panel consumes protected routes (e.g., updating inventory, viewing analytics).
-- **File Handling**: Manages image uploads (for products and dynamic hero floating elements) and serves them securely to the frontend.
+- **File Handling & Vercel Gateway**: Serves images and exports the Express application via `/api/index.js` for zero-config Vercel serverless deployment.
 
 ### 3. Customer Storefront (Frontend)
 Built with lightweight Vanilla JavaScript, HTML5, and CSS3 for lightning-fast performance.
-- **Dynamic Hydration**: Scripts (`script.js`) fetch data from the Backend API to dynamically build product grids, individual product pages (`shop.html`, `product.html`), and search results.
-- **Checkout & Cart**: The cart state is managed locally and synced with the backend during the checkout flow (`checkout.html`). It automatically calculates advance payments (e.g., 20% for pre-orders) and dynamic delivery fees.
-- **Responsive Design**: Entirely overhauled to support fluid typography, mobile-first stacking grids, and compact overlays (like the Search Bar) ensuring a premium experience on both ultra-wide monitors and small smartphones.
+- **3D Looping Hero Showcase**: Features a 2.6-second continuous 3D rotation stage (`transform-style: preserve-3d`) showcasing primary product packages (Pouch, Can, Fruit Chips).
+- **Dynamic Ambient Color Glow**: A deep 3D background layer (`-300px` transform depth, `z-index: 0`) that smoothly morphs radial glow colors (Strawberry Crimson Red, Cocoa Amber Brown, Mango Yellow-Orange) depending on the active centered product.
+- **Interactive Eye-Tracking Authentication**: `login.html` and `signup.html` feature interactive googly eyes that calculate real-time angle and radius offsets to track customer mouse cursor movements.
+- **Dynamic Hydration**: Scripts (`script.js`) fetch data from the Backend API to dynamically build product grids, individual product pages (`shop.html`, `product.html`), search results, and single AI Assistant chat interactions.
+- **Checkout & Cart**: Managed locally and synced with the backend during checkout (`checkout.html`), supporting 20% advance pre-order calculations and delivery fees.
 
 ### 4. Admin Dashboard (`/admin`)
 A bespoke, secure single-page application built for store managers.
 - **Real-time Management**: Interacts directly with protected backend APIs to manage CRUD operations for Products, Orders, Customers, Banners, and Coupons.
-- **Storefront Customization**: Allows admins to upload real fruit images directly into the 7 slots of the homepage Hero section, syncing instantly with the customer-facing site.
+- **Storefront Customization**: Allows admins to upload real fruit images directly into the slots of the homepage Hero section, syncing instantly with the customer-facing site.
 - **Responsive & Ergonomic**: Features a mobile-friendly slide-out drawer navigation, top-right profile toggles, and horizontally scrolling data tables so the store can be managed from a phone on the go.
 
 ---
@@ -59,51 +71,78 @@ A bespoke, secure single-page application built for store managers.
    - Transformed rigid desktop layouts into fluid, mobile-first grids.
    - Compacted UI elements (Search bars, Checkout summaries, Admin tables) to ensure maximum screen real-estate usage on mobile devices.
    - Implemented sleek side-drawer UI patterns for admin forms and navigation.
-   - Wired up dynamic footer links (Instagram/Facebook) and visual polish (floating real fruit hero images).
+   - Wired up dynamic footer links (Instagram/Facebook) and visual polish.
+
+5. **Phase 5: Version 2 Features, 3D Showcase & Cloud Deployment (Newly Completed)**
+   - **3D Product Showcase Carousel**: Engineered non-stop 3D rotation stage with responsive desktop and mobile stacking layouts.
+   - **Dynamic Ambient Flavor Glow**: Created deep 3D background color aura morphing in sync with centered products.
+   - **Interactive Cursor-Tracking Eyes**: Added real-time mouse tracking googly eyes to customer login and signup pages.
+   - **PDP Slug Engine**: Upgraded `product.html` with fuzzy slug/ID resolution (`product.html?id=fleva-starter-gift-box`) and asynchronous catalog loading protection.
+   - **Single Unified AI Assistant**: Streamlined floating AI chat widget (`chat-widget.js`) across all storefront pages.
+   - **Vercel & MongoDB Atlas Deployment**: Deployed production build to Vercel serverless architecture connected to cloud MongoDB Atlas.
 
 ---
 
-## 🚀 Next Steps to Go Live (Production Roadmap)
+## 🚀 Future Roadmap & Next Steps (Phase 6)
 
-To launch the site securely to the public, the following critical steps remain:
+To further enhance the platform, the following features are planned for future iterations:
 
-### 1. Database Production Setup
-- **Migrate to MongoDB Atlas**: Move the database off local environments onto a managed, scalable cloud instance (MongoDB Atlas).
-- **Secure Credentials**: Store MongoDB URIs, JWT Secrets, and API keys inside a secure `.env` file instead of hardcoding them.
-- **Data Cleanup**: Purge all local/test data (fake products, test orders, dummy customers) and seed the production database with actual live inventory.
+### 1. Live Payment Gateway Integration
+- **Local & Global Gateways**: Integrate live API keys for bKash, Nagad, SSLCommerz (Bangladesh), and Stripe (International cards).
+- **Automated Payment Status Callbacks**: Real-time webhook listeners to auto-update order status from `pending` to `paid`.
 
-### 2. Authentication & Security Hardening
-- **Email/SMS Verification**: Hook up real authentication providers (like Twilio or Nodemailer) to verify customer identities during Sign-up.
-- **CORS Configuration**: Lock down the Express backend's CORS policy so it only accepts API requests from the exact live domain (e.g., `https://flevaworld.com`).
-- **HTTPS Enforcement**: Ensure cookies (especially JWT HttpOnly cookies) are strictly marked with `Secure: true` so they only transmit over encrypted SSL connections.
+### 2. Automated SMS & Email Notifications
+- **Order Tracking Updates**: Send automated SMS/Email confirmations upon order placement, dispatch, and delivery.
+- **Password Reset & OTP Verification**: Implement 6-digit OTP verification during customer registration.
 
-### 3. Payment Gateway Integration
-- **Live Payments**: Replace the dummy local checkout system with live API keys for actual payment processors (e.g., Stripe for international cards, SSLCommerz for local Bangladesh transactions, and validated Cash on Delivery).
+### 3. Customer Reviews & Photo Submissions
+- **Verified Buyer Reviews**: Allow authenticated customers to submit star ratings, reviews, and unboxing images on product PDP pages.
 
-### 4. Hosting & Actual Domain Binding
-- **Backend Deployment**: Host the Node/Express server on a robust platform (e.g., Render, Railway, or AWS).
-- **Frontend Deployment**: Deploy the static Vanilla JS frontend to a global CDN (e.g., Vercel, Netlify, or Firebase Hosting).
-- **Custom Domain Setup**: Purchase the official domain (e.g., `flevaworld.com`), point the DNS A/CNAME records to the frontend hosting provider, and enforce an SSL certificate (HTTPS) for the entire site.
+### 4. Advanced Admin Analytics & Inventory Alerts
+- **CSV Data Export**: Export sales reports, order history, and customer lists to CSV.
+- **Stock Threshold Alerts**: Automated admin dashboard notifications when product stock falls below 10 units.
 
+---
 
+## 💻 Local Development Setup
 
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/hasin404/Fleva-website.git
+   cd Fleva-website
+   ```
 
+2. **Install backend dependencies:**
+   ```bash
+   cd backend
+   npm install
+   ```
 
+3. **Configure Environment Variables (`backend/.env`):**
+   ```env
+   PORT=3000
+   MONGO_URI=mongodb+srv://abrar420240_db_user:NaLRCSO6gYnXORtG@fleva.bg54fva.mongodb.net/fleva?retryWrites=true&w=majority
+   JWT_SECRET=your_jwt_secret_key
+   ```
 
+4. **Start the local development server:**
+   ```bash
+   node server.js
+   ```
 
+5. **Open in browser:**
+   ```
+   http://localhost:3000
+   ```
 
+---
 
+## 👤 Author
 
+**Hasin Abrar (`hasin404`)**
+- GitHub: [@hasin404](https://github.com/hasin404)
+- Email: `hasinabrrr@gmail.com`
 
-How to Actually Go Live
-To make both Fleva World and the Admin Panel run on a live link, you have to host it in three separate pieces (as outlined in the README):
+---
 
-The Database (MongoDB Atlas): You need to create a free account on MongoDB Atlas. This moves your database from your local laptop into the cloud so it runs 24/7.
-
-The Backend Server (Node.js): You cannot host this on GitHub. You must deploy the backend/ folder to a service like Render, Railway, or Heroku. These services provide a live URL (e.g., https://fleva-backend.onrender.com) and actually run your server.js code 24/7.
-
-The Frontend (Vercel or Netlify): Once your backend is live, you change the API_BASE URL in your frontend JavaScript from http://localhost:5000 to your new live backend URL. Then, you can deploy the rest of the project (the HTML/CSS/JS) to a service like Vercel or Netlify (which connects directly to your GitHub repo).
-
-Once those three steps are done, you can link your custom domain (e.g., flevaworld.com) to Vercel, and the entire platform—storefront and admin panel—will be fully live! 
-
-
+© 2026 FLEVA. All rights reserved.
