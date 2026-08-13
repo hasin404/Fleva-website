@@ -1,5 +1,9 @@
 {
   "version": 2,
+  "env": {
+    "MONGODB_URI": "mongodb+srv://abrar420240_db_user:NaLRCSO6gYnXORtG@fleva.bg54fva.mongodb.net/fleva?retryWrites=true&w=majority",
+    "NODE_ENV": "production"
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
