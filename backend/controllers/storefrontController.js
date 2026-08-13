@@ -3,29 +3,18 @@ const Product = require('../models/Product');
 const fs = require('fs');
 const path = require('path');
 
-const ensureUploadDir = () => {
-  const dir = path.join(__dirname, '../../assets/uploads');
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-};
-
 const saveFileLocally = (file) => {
   return new Promise((resolve) => {
     try {
-      if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-        const b64 = file.buffer.toString('base64');
+      if (file) {
+        const buf = file.buffer || (Buffer.isBuffer(file) ? file : Buffer.from(file));
+        const b64 = buf.toString('base64');
         const mime = file.mimetype || 'image/png';
         return resolve({ secure_url: `data:${mime};base64,${b64}` });
       }
-
-      ensureUploadDir();
-      const filename = `upload-${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
-      const filepath = path.join(__dirname, '../../assets/uploads', filename);
-      fs.writeFileSync(filepath, file.buffer);
-      resolve({ secure_url: `assets/uploads/${filename}` });
+      resolve({ secure_url: '/assets/products/protein-bars.png' });
     } catch (err) {
-      const b64 = file.buffer.toString('base64');
-      const mime = file.mimetype || 'image/png';
-      resolve({ secure_url: `data:${mime};base64,${b64}` });
+      resolve({ secure_url: '/assets/products/protein-bars.png' });
     }
   });
 };

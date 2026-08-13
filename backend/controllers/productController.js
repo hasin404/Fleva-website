@@ -11,33 +11,8 @@ const path = require('path');
 const fs = require('fs');
 
 const uploadToCloudinary = (buffer, folder = 'fleva-products') => {
-  return new Promise((resolve, reject) => {
-    // 1. If running on Vercel / Cloud or production serverless runtime
-    if (process.env.VERCEL || process.env.VERCEL_ENV || process.env.NOW_REGION || process.env.NODE_ENV === 'production') {
-      if (buffer && Buffer.isBuffer(buffer)) {
-        const b64 = buffer.toString('base64');
-        return resolve({
-          secure_url: `data:image/png;base64,${b64}`,
-          public_id: `upload-${Date.now()}`
-        });
-      }
-    }
-
-    // 2. Try saving to local filesystem (local development)
+  return new Promise((resolve) => {
     try {
-      const dir = path.join(__dirname, '..', '..', 'assets', 'uploads');
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-
-      const filename = `upload-${Date.now()}-${Math.round(Math.random() * 1E9)}.png`;
-      const filepath = path.join(dir, filename);
-
-      fs.writeFileSync(filepath, buffer);
-      return resolve({
-        secure_url: `/assets/uploads/${filename}`,
-        public_id: filename
-      });
-    } catch (fileErr) {
-      // 3. If local file system write fails (e.g. Vercel read-only system), fallback safely to base64
       if (buffer) {
         const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
         const b64 = buf.toString('base64');
@@ -46,7 +21,15 @@ const uploadToCloudinary = (buffer, folder = 'fleva-products') => {
           public_id: `upload-${Date.now()}`
         });
       }
-      reject(fileErr);
+      resolve({
+        secure_url: '/assets/products/protein-bars.png',
+        public_id: `default-${Date.now()}`
+      });
+    } catch (err) {
+      resolve({
+        secure_url: '/assets/products/protein-bars.png',
+        public_id: `default-${Date.now()}`
+      });
     }
   });
 };
