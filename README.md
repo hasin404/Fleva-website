@@ -7,10 +7,10 @@ FLEVA is a modern, highly responsive, full-stack e-commerce platform designed fo
 
 ## 🌐 Live Production Links
 
-* 🌐 **Live Storefront Website:** [https://fleva-website.vercel.app](https://fleva-website.vercel.app)
-* 🛍️ **Shop Catalog:** [https://fleva-website.vercel.app/shop.html](https://fleva-website.vercel.app/shop.html)
-* 🎁 **Product Details (PDP):** [https://fleva-website.vercel.app/product.html?id=fleva-starter-gift-box](https://fleva-website.vercel.app/product.html?id=fleva-starter-gift-box)
-* 🎨 **Admin Dashboard:** [https://fleva-website.vercel.app/admin](https://fleva-website.vercel.app/admin)
+* 🌐 **Live Storefront Website:** [https://flevaworld.vercel.app](https://flevaworld.vercel.app)
+* 🛍️ **Shop Catalog:** [https://flevaworld.vercel.app/shop.html](https://flevaworld.vercel.app/shop.html)
+* 🎁 **Product Details (PDP):** [https://flevaworld.vercel.app/product.html?id=fleva-starter-gift-box](https://flevaworld.vercel.app/product.html?id=fleva-starter-gift-box)
+* 🎨 **Admin Dashboard:** [https://flevaworld.vercel.app/admin](https://flevaworld.vercel.app/admin)
 * 📦 **GitHub Repository:** [https://github.com/hasin404/Fleva-website](https://github.com/hasin404/Fleva-website)
 
 ---
