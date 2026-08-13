@@ -237,6 +237,10 @@ async function loadStorefront() {
 function setupCravingClickHandlers(cravingsMapping) {
   const buttons = document.querySelectorAll('#craving-choices button');
   const ctaBtn = document.querySelector('.craving-cta');
+  const mainImg = document.getElementById('craving-main-img');
+  const mainTitle = document.getElementById('craving-main-title');
+  const mainTag = document.getElementById('craving-main-tag');
+  const mainOverlay = document.getElementById('craving-main-overlay');
   if (!buttons.length) return;
 
   const keyMap = {
@@ -246,6 +250,8 @@ function setupCravingClickHandlers(cravingsMapping) {
     'guiltFree': 'guiltFree',
     'surprise': 'surprise'
   };
+
+  const formatUrl = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
 
   function updateCravingsUI(selectedBtn) {
     buttons.forEach(b => b.classList.remove('picked'));
@@ -261,6 +267,18 @@ function setupCravingClickHandlers(cravingsMapping) {
 
     if (targetProduct) {
       const prodId = typeof targetProduct === 'object' ? (targetProduct.slug || targetProduct._id) : targetProduct;
+      const title = typeof targetProduct === 'object' ? (targetProduct.title || targetProduct.name) : '';
+      const image = typeof targetProduct === 'object' ? (targetProduct.images?.[0]?.url || targetProduct.image) : '';
+      const tag = typeof targetProduct === 'object' ? (targetProduct.tag || (targetProduct.price ? `৳${targetProduct.price}` : '')) : '';
+
+      if (mainTitle && title) mainTitle.textContent = title;
+      if (mainTag && tag) mainTag.textContent = tag;
+      if (mainImg && image) {
+        mainImg.src = formatUrl(image);
+        mainImg.style.display = 'block';
+        if (mainOverlay) mainOverlay.style.display = 'flex';
+      }
+
       if (prodId) {
         if (ctaBtn) ctaBtn.href = `product.html?id=${prodId}`;
         return prodId;
@@ -277,14 +295,19 @@ function setupCravingClickHandlers(cravingsMapping) {
   buttons.forEach(btn => {
     btn.onclick = (e) => {
       e.preventDefault();
-      const prodId = updateCravingsUI(btn);
-      if (prodId) {
-        window.location.href = `product.html?id=${prodId}`;
-      } else {
-        window.location.href = 'shop.html';
-      }
+      updateCravingsUI(btn);
     };
   });
+}
+
+function findProduct(idOrSlug) {
+  if (!idOrSlug) return null;
+  const target = String(idOrSlug).toLowerCase();
+  return PRODUCTS.find(p => 
+    String(p.id || '').toLowerCase() === target || 
+    String(p._id || '').toLowerCase() === target || 
+    String(p.slug || '').toLowerCase() === target
+  ) || null;
 }
 
 /**
