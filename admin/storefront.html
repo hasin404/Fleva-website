@@ -260,7 +260,7 @@
   }
 
   async function loadStorefront() {
-    await loadProductsDropdown();
+    try { await loadProductsDropdown(); } catch (e) {}
     try {
       const res = await adminFetch(`${API_BASE}/storefront`);
       const data = await res.json();
@@ -422,16 +422,19 @@
         // Don't set Content-Type header for FormData, browser sets it with boundary
       });
 
-      const data = await res.json();
       if (data.success) {
         alert('Storefront updated successfully!');
-        await loadStorefront();
+        try {
+          await loadStorefront();
+        } catch (reloadErr) {
+          console.warn('Post-save storefront reload warning:', reloadErr);
+        }
       } else {
         alert(data.message || 'Error updating storefront');
       }
     } catch (err) {
-      console.error(err);
-      alert('Network error.');
+      console.error('Save storefront error:', err);
+      alert('Error saving storefront settings: ' + (err.message || 'Network error'));
     } finally {
       btn.textContent = 'Save Changes';
       btn.disabled = false;
