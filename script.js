@@ -217,10 +217,9 @@ async function loadStorefront() {
 function setupCravingClickHandlers(cravingsMapping) {
   const buttons = document.querySelectorAll('#craving-choices button');
   const ctaBtn = document.querySelector('.craving-cta');
-  const mainImg = document.getElementById('craving-main-img');
-  const mainTitle = document.getElementById('craving-main-title');
-  const mainTag = document.getElementById('craving-main-tag');
-  const mainOverlay = document.getElementById('craving-main-overlay');
+  const titleBtn = document.getElementById('craving-title-btn');
+  const defaultVisual = document.getElementById('craving-default-visual');
+  const productContainer = document.getElementById('craving-product-container');
   if (!buttons.length) return;
 
   const keyMap = {
@@ -231,56 +230,85 @@ function setupCravingClickHandlers(cravingsMapping) {
     'surprise': 'surprise'
   };
 
-  const formatUrl = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
+  function showDefaultView() {
+    buttons.forEach(b => b.classList.remove('picked'));
+    if (defaultVisual) defaultVisual.style.display = 'block';
+    if (productContainer) {
+      productContainer.style.display = 'none';
+      productContainer.innerHTML = '';
+    }
+    if (ctaBtn) ctaBtn.href = 'shop.html';
+  }
 
-  function updateCravingsUI(selectedBtn) {
+  function getProductObj(target) {
+    if (!target) return null;
+    let targetId = target;
+    if (typeof target === 'object') {
+      targetId = target.slug || target._id || target.id;
+    }
+    let found = typeof findProduct === 'function' ? findProduct(targetId) : null;
+    if (found) return found;
+
+    if (typeof target === 'object') {
+      const formatUrl = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
+      return {
+        id: target.slug || target._id,
+        _id: target._id,
+        slug: target.slug || target._id,
+        name: target.title || target.name || 'FLEVA Product',
+        category: target.categoryName || target.category || 'FLEVA Snacks',
+        price: target.price || 350,
+        discountPrice: target.discountPrice || 0,
+        tag: target.tag || '',
+        color: target.color || '#16140F',
+        accent: target.accent || 'var(--lime)',
+        image: formatUrl(target.images?.[0]?.url || target.image || '/assets/products/protein-bars.png'),
+        desc: target.description || target.desc || '',
+        stock: target.stock !== undefined ? target.stock : 50,
+        availability: target.availability || 'in-stock',
+      };
+    }
+    return null;
+  }
+
+  function selectCraving(selectedBtn) {
+    const isAlreadyPicked = selectedBtn.classList.contains('picked');
+    if (isAlreadyPicked) {
+      showDefaultView();
+      return;
+    }
+
     buttons.forEach(b => b.classList.remove('picked'));
     selectedBtn.classList.add('picked');
 
     const type = selectedBtn.getAttribute('data-craving');
     const mappedKey = keyMap[type];
-    let targetProduct = null;
+    let rawProduct = cravingsMapping ? cravingsMapping[mappedKey] : null;
+    let productObj = getProductObj(rawProduct);
 
-    if (cravingsMapping && cravingsMapping[mappedKey]) {
-      targetProduct = cravingsMapping[mappedKey];
+    if (productObj && productContainer && typeof renderProductCard === 'function') {
+      if (defaultVisual) defaultVisual.style.display = 'none';
+      productContainer.style.display = 'block';
+      productContainer.innerHTML = renderProductCard(productObj);
+
+      const prodId = productObj.slug || productObj.id || productObj._id;
+      if (ctaBtn && prodId) ctaBtn.href = `product.html?id=${prodId}`;
+    } else {
+      showDefaultView();
     }
-
-    if (targetProduct) {
-      const prodId = typeof targetProduct === 'object' ? (targetProduct.slug || targetProduct._id) : targetProduct;
-      const title = typeof targetProduct === 'object' ? (targetProduct.title || targetProduct.name) : '';
-      const image = typeof targetProduct === 'object' ? (targetProduct.images?.[0]?.url || targetProduct.image) : '';
-      const tag = typeof targetProduct === 'object' ? (targetProduct.tag || (targetProduct.price ? `৳${targetProduct.price}` : '')) : '';
-
-      if (mainTitle && title) mainTitle.textContent = title;
-      if (mainTag && tag) mainTag.textContent = tag;
-      if (mainImg && image) {
-        mainImg.src = formatUrl(image);
-        mainImg.style.display = 'block';
-        if (mainOverlay) mainOverlay.style.display = 'flex';
-      }
-
-      if (prodId) {
-        if (ctaBtn) ctaBtn.href = `product.html?id=${prodId}`;
-        return prodId;
-      }
-    }
-    if (ctaBtn) ctaBtn.href = 'shop.html';
-    return null;
   }
 
-  // Set default initial state
-  const initialPicked = document.querySelector('#craving-choices button.picked') || buttons[0];
-  if (initialPicked) updateCravingsUI(initialPicked);
+  // Start with default visual
+  showDefaultView();
+
+  if (titleBtn) {
+    titleBtn.onclick = () => showDefaultView();
+  }
 
   buttons.forEach(btn => {
     btn.onclick = (e) => {
       e.preventDefault();
-      const prodId = updateCravingsUI(btn);
-      if (prodId) {
-        window.location.href = `product.html?id=${prodId}`;
-      } else {
-        window.location.href = 'shop.html';
-      }
+      selectCraving(btn);
     };
   });
 }
