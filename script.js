@@ -295,7 +295,12 @@ function setupCravingClickHandlers(cravingsMapping) {
   buttons.forEach(btn => {
     btn.onclick = (e) => {
       e.preventDefault();
-      updateCravingsUI(btn);
+      const prodId = updateCravingsUI(btn);
+      if (prodId) {
+        window.location.href = `product.html?id=${prodId}`;
+      } else {
+        window.location.href = 'shop.html';
+      }
     };
   });
 }
