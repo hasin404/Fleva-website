@@ -242,20 +242,16 @@ function setupCravingClickHandlers(cravingsMapping) {
 
   function getProductObj(target) {
     if (!target) return null;
-    let targetId = target;
-    if (typeof target === 'object') {
-      targetId = target.slug || target._id || target.id;
-    }
-    let found = typeof findProduct === 'function' ? findProduct(targetId) : null;
-    if (found) return found;
-
-    if (typeof target === 'object') {
+    let targetId = typeof target === 'object' ? (target.slug || target._id || target.id) : target;
+    
+    // 1. If target is already a full product object
+    if (typeof target === 'object' && (target.title || target.name)) {
       const formatUrl = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
       return {
         id: target.slug || target._id,
         _id: target._id,
         slug: target.slug || target._id,
-        name: target.title || target.name || 'FLEVA Product',
+        name: target.title || target.name,
         category: target.categoryName || target.category || 'FLEVA Snacks',
         price: target.price || 350,
         discountPrice: target.discountPrice || 0,
@@ -268,6 +264,30 @@ function setupCravingClickHandlers(cravingsMapping) {
         availability: target.availability || 'in-stock',
       };
     }
+
+    // 2. Look in loaded PRODUCTS array
+    if (window.PRODUCTS && window.PRODUCTS.length) {
+      const found = PRODUCTS.find(p => 
+        String(p.id || '').toLowerCase() === String(targetId).toLowerCase() || 
+        String(p._id || '').toLowerCase() === String(targetId).toLowerCase() || 
+        String(p.slug || '').toLowerCase() === String(targetId).toLowerCase()
+      );
+      if (found) return found;
+    }
+
+    // 3. Look in STATIC_PRODUCTS array
+    if (typeof STATIC_PRODUCTS !== 'undefined' && STATIC_PRODUCTS.length) {
+      const foundStatic = STATIC_PRODUCTS.find(p => 
+        String(p.id || '').toLowerCase() === String(targetId).toLowerCase() || 
+        String(p._id || '').toLowerCase() === String(targetId).toLowerCase()
+      );
+      if (foundStatic) return foundStatic;
+    }
+
+    // 4. Default fallback to first product if available
+    if (window.PRODUCTS && window.PRODUCTS.length) return PRODUCTS[0];
+    if (typeof STATIC_PRODUCTS !== 'undefined' && STATIC_PRODUCTS.length) return STATIC_PRODUCTS[0];
+
     return null;
   }
 
@@ -662,75 +682,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Try to load products, banners, and storefront config from API
   await Promise.all([loadProducts(), loadBanners(), loadStorefront()]);
 
-  // Setup Cravings section interactions
-  const cravingBtns = document.querySelectorAll('#craving-choices button');
-  if (cravingBtns.length > 0) {
-    cravingBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        cravingBtns.forEach(b => b.classList.remove('picked'));
-        btn.classList.add('picked');
-        
-        const type = btn.dataset.craving;
-        const mappedType = type === 'guilt-free' ? 'guiltFree' : type;
-        
-        const defaultContent = document.getElementById('craving-default-content');
-        const productCardContainer = document.getElementById('craving-product-card');
-        
-        if (STOREFRONT_CONFIG && STOREFRONT_CONFIG.cravings && STOREFRONT_CONFIG.cravings[mappedType]) {
-          const item = STOREFRONT_CONFIG.cravings[mappedType];
-          const productId = (item && typeof item === 'object') ? String(item._id || item.id) : String(item);
-          let product = PRODUCTS.find(p => (String(p._id) === productId || String(p.id) === productId));
-          
-          if (!product && typeof item === 'object' && item.title) {
-            product = {
-              id: String(item._id || item.id),
-              _id: String(item._id || item.id),
-              name: item.title,
-              title: item.title,
-              price: item.price,
-              discountPrice: item.discountPrice || 0,
-              desc: item.description,
-              category: item.categoryName || 'Snacks',
-              images: item.images,
-              availability: item.availability || 'in-stock',
-              stock: item.stock ?? 10
-            };
-          }
-          
-          if (product) {
-            if (defaultContent) defaultContent.style.display = 'none';
-            if (productCardContainer) {
-              productCardContainer.style.display = 'block';
-              productCardContainer.innerHTML = renderProductCard(product);
-            }
-            return;
-          }
-        }
-        
-        // Fallback to default visuals if no product found
-        if (defaultContent) defaultContent.style.display = 'block';
-        if (productCardContainer) {
-          productCardContainer.style.display = 'none';
-          productCardContainer.innerHTML = '';
-        }
-      });
-    });
-  }
 
-  // Cravings reset handler
-  const cravingHeading = document.getElementById('craving-heading');
-  if (cravingHeading) {
-    cravingHeading.addEventListener('click', () => {
-      cravingBtns.forEach(b => b.classList.remove('picked'));
-      const defaultContent = document.getElementById('craving-default-content');
-      const productCardContainer = document.getElementById('craving-product-card');
-      if (defaultContent) defaultContent.style.display = 'block';
-      if (productCardContainer) {
-        productCardContainer.style.display = 'none';
-        productCardContainer.innerHTML = '';
-      }
-    });
-  }
 
   // Inject Search UI
   const headerIcons = document.querySelector('.header-icons');
