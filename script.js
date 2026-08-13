@@ -292,11 +292,7 @@ function setupCravingClickHandlers(cravingsMapping) {
   }
 
   function selectCraving(selectedBtn) {
-    const isAlreadyPicked = selectedBtn.classList.contains('picked');
-    if (isAlreadyPicked) {
-      showDefaultView();
-      return;
-    }
+    if (!selectedBtn) return;
 
     buttons.forEach(b => b.classList.remove('picked'));
     selectedBtn.classList.add('picked');
@@ -313,13 +309,16 @@ function setupCravingClickHandlers(cravingsMapping) {
 
       const prodId = productObj.slug || productObj.id || productObj._id;
       if (ctaBtn && prodId) ctaBtn.href = `product.html?id=${prodId}`;
-    } else {
-      showDefaultView();
     }
   }
 
-  // Start with default visual
-  showDefaultView();
+  // Select 1st option by default
+  const initialPicked = document.querySelector('#craving-choices button.picked') || buttons[0];
+  if (initialPicked) {
+    selectCraving(initialPicked);
+  } else {
+    showDefaultView();
+  }
 
   if (titleBtn) {
     titleBtn.onclick = () => showDefaultView();
