@@ -75,22 +75,27 @@ app.use(compression());
 app.use('/api', apiLimiter);
 
 /* ---------- API Routes ---------- */
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/products', productRoutes);
-app.use('/api/v1/orders', orderRoutes);
-app.use('/api/v1/cart', cartRoutes);
-app.use('/api/v1/wishlist', wishlistRoutes);
-app.use('/api/v1/reviews', reviewRoutes);
-app.use('/api/v1/coupons', couponRoutes);
-app.use('/api/v1/banners', bannerRoutes);
-app.use('/api/v1/notifications', notificationRoutes);
-app.use('/api/v1/analytics', analyticsRoutes);
-app.use('/api/v1/admin', adminRoutes);
-app.use('/api/v1/ai', aiRoutes);
-app.use('/api/v1/search', searchRoutes);
-app.use('/api/v1/tracking', trackingRoutes);
-app.use('/api/v1/payments', paymentRoutes);
-app.use('/api/v1/storefront', storefrontRoutes);
+const mountRoutes = (prefix) => {
+  app.use(`${prefix}/v1/auth`, authRoutes);
+  app.use(`${prefix}/v1/products`, productRoutes);
+  app.use(`${prefix}/v1/orders`, orderRoutes);
+  app.use(`${prefix}/v1/cart`, cartRoutes);
+  app.use(`${prefix}/v1/wishlist`, wishlistRoutes);
+  app.use(`${prefix}/v1/reviews`, reviewRoutes);
+  app.use(`${prefix}/v1/coupons`, couponRoutes);
+  app.use(`${prefix}/v1/banners`, bannerRoutes);
+  app.use(`${prefix}/v1/notifications`, notificationRoutes);
+  app.use(`${prefix}/v1/analytics`, analyticsRoutes);
+  app.use(`${prefix}/v1/admin`, adminRoutes);
+  app.use(`${prefix}/v1/ai`, aiRoutes);
+  app.use(`${prefix}/v1/search`, searchRoutes);
+  app.use(`${prefix}/v1/tracking`, trackingRoutes);
+  app.use(`${prefix}/v1/payments`, paymentRoutes);
+  app.use(`${prefix}/v1/storefront`, storefrontRoutes);
+};
+
+mountRoutes('/api');
+mountRoutes('');
 
 /* ---------- Health check ---------- */
 app.get('/api/health', (req, res) => {
