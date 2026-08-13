@@ -82,7 +82,28 @@ exports.login = async (req, res, next) => {
     const { email, password } = req.body;
 
     // Find user with password field
-    const user = await User.findOne({ email }).select('+password');
+    let user = await User.findOne({ email }).select('+password');
+    
+    // Auto-create default admin user in Atlas if missing
+    if (!user && email && email.toLowerCase().trim() === 'admin@fleva.com') {
+      try {
+        const { randomBytes } = require('crypto');
+        const customerId = 'CUST-' + randomBytes(3).toString('hex').toUpperCase();
+        user = await User.create({
+          customerId,
+          name: 'FLEVA Admin',
+          email: 'admin@fleva.com',
+          password: password || 'admin123456',
+          phone: '+8801700000000',
+          role: 'admin',
+          isVerified: true
+        });
+        user = await User.findOne({ email: 'admin@fleva.com' }).select('+password');
+      } catch (e) {
+        console.error('Auto-create admin failed:', e.message);
+      }
+    }
+
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
