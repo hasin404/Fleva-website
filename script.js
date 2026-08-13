@@ -151,6 +151,7 @@ const STATIC_PRODUCTS = [
 
 /* ---- Storefront dynamic settings from API ---- */
 let STOREFRONT = null;
+let STOREFRONT_CONFIG = null;
 
 async function loadStorefront() {
   try {
@@ -159,6 +160,9 @@ async function loadStorefront() {
       const data = await res.json();
       if (data.success && data.storefront) {
         STOREFRONT = data.storefront;
+        STOREFRONT_CONFIG = data.storefront;
+        window.STOREFRONT_CONFIG = data.storefront;
+        document.dispatchEvent(new Event('storefront-loaded'));
 
         const formatUrl = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
 
@@ -170,7 +174,7 @@ async function loadStorefront() {
         if (hTitle && STOREFRONT.heroTitle) hTitle.innerHTML = STOREFRONT.heroTitle;
         if (hLede && STOREFRONT.heroSubtitle) hLede.innerHTML = STOREFRONT.heroSubtitle;
         if (hBtn) {
-          if (STOREFRONT.heroBtnText && hBtn.childNodes[0]) hBtn.childNodes[0].textContent = STOREFRONT.heroBtnText + ' ';
+          if (STOREFRONT.heroBtnText) hBtn.innerHTML = `${STOREFRONT.heroBtnText} <span class="btn-dot">→</span>`;
           if (STOREFRONT.heroBtnLink) hBtn.href = STOREFRONT.heroBtnLink;
         }
 
@@ -187,37 +191,13 @@ async function loadStorefront() {
         if (hImg2 && STOREFRONT.heroImage2) hImg2.src = formatUrl(STOREFRONT.heroImage2);
         if (hImg3 && STOREFRONT.heroImage3) hImg3.src = formatUrl(STOREFRONT.heroImage3);
 
-        // Hero Floating Fruits
-        const floatContainer = document.getElementById('hero-floating-container');
-        if (floatContainer) {
-          let floatHTML = '';
-          const defaultCoords = [
-            { top: '4%', left: '8%', width: '16%' },
-            { top: '12%', right: '10%', width: '18%' },
-            { bottom: '15%', left: '4%', width: '15%' },
-            { bottom: '10%', right: '6%', width: '17%' },
-            { top: '40%', left: '2%', width: '14%' },
-            { top: '45%', right: '2%', width: '15%' },
-            { top: '25%', left: '38%', width: '12%' },
-          ];
-          for (let i = 1; i <= 7; i++) {
-            const imgKey = `heroFloat${i}`;
-            if (STOREFRONT[imgKey]) {
-              const pos = defaultCoords[i - 1] || defaultCoords[0];
-              const styleStr = Object.entries(pos).map(([k, v]) => `${k}:${v}`).join(';');
-              floatHTML += `<div class="float-item" style="position:absolute;${styleStr};z-index:2;"><img src="${formatUrl(STOREFRONT[imgKey])}" style="width:100%;height:auto;filter:drop-shadow(0 10px 15px rgba(0,0,0,0.2));" alt="fruit"></div>`;
-            }
-          }
-          if (floatHTML) floatContainer.innerHTML = floatHTML;
-        }
-
         // Craving Images
         const crvPlate = document.querySelector('.craving-visual');
         if (crvPlate) {
-          const c1 = crvPlate.querySelector('.float-item:nth-child(2) img');
-          const c2 = crvPlate.querySelector('.float-item:nth-child(3) img');
-          const c3 = crvPlate.querySelector('.float-item:nth-child(4) img');
-          const cMain = crvPlate.querySelector('div[style*="inset:30% 26%"] img');
+          const c1 = crvPlate.querySelector('.float-item:nth-child(2) img') || document.getElementById('craving-img-1');
+          const c2 = crvPlate.querySelector('.float-item:nth-child(3) img') || document.getElementById('craving-img-2');
+          const c3 = crvPlate.querySelector('.float-item:nth-child(4) img') || document.getElementById('craving-img-3');
+          const cMain = document.getElementById('craving-main-img');
 
           if (c1 && STOREFRONT.cravingImg1) c1.src = formatUrl(STOREFRONT.cravingImg1);
           if (c2 && STOREFRONT.cravingImg2) c2.src = formatUrl(STOREFRONT.cravingImg2);
@@ -644,78 +624,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-let STOREFRONT_CONFIG = null;
 
-async function loadStorefront() {
-  try {
-    const res = await fetch(`${API_BASE}/storefront?t=${Date.now()}`, { cache: "no-store" });
-    if (!res.ok) return;
-    const data = await res.json();
-    if (data.success && data.storefront) {
-      STOREFRONT_CONFIG = data.storefront;
-      window.STOREFRONT_CONFIG = data.storefront;
-      document.dispatchEvent(new Event('storefront-loaded'));
-      const sf = data.storefront;
-      const title = document.getElementById('hero-title');
-      const subtitle = document.getElementById('hero-lede');
-      const btn = document.getElementById('hero-btn');
-      const img1 = document.getElementById('hero-img-1');
-      const img2 = document.getElementById('hero-img-2');
-      
-      const defaultTitle = 'Real fruits.<br>Crazy good.<span class="stroke">Fleva.</span>';
-      const defaultSubtitle = 'From snacking to sharing, we make healthy feel insanely delicious.';
-      const defaultBtnText = 'Explore now';
-      const defaultBtnLink = 'shop.html';
-
-      if (title) title.innerHTML = (sf.heroTitle && sf.heroTitle.trim()) ? sf.heroTitle : defaultTitle;
-      if (subtitle) subtitle.innerHTML = (sf.heroSubtitle && sf.heroSubtitle.trim()) ? sf.heroSubtitle : defaultSubtitle;
-      if (btn) {
-        btn.innerHTML = `${(sf.heroBtnText && sf.heroBtnText.trim()) ? sf.heroBtnText : defaultBtnText} <span class="btn-dot">→</span>`;
-        btn.href = sf.heroBtnLink || defaultBtnLink;
-      }
-      if (img1 && sf.heroImage1) img1.src = '/' + sf.heroImage1;
-      if (img2 && sf.heroImage2) img2.src = '/' + sf.heroImage2;
-
-      // Handle Hero Floating Images
-      const floatContainer = document.getElementById('hero-floating-container');
-      if (floatContainer) {
-        floatContainer.innerHTML = '';
-        const styles = [
-          'top:2%;right:22%;width:9%;',
-          'top:34%;left:2%;width:8%;animation-delay:.6s;',
-          'bottom:20%;left:14%;width:9%;animation-delay:1s;',
-          'top:10%;right:2%;width:7%;animation-delay:.3s;',
-          'bottom:30%;right:12%;width:8%;animation-delay:1.2s;',
-          'top:25%;left:35%;width:6%;animation-delay:0.8s;',
-          'bottom:10%;left:40%;width:7%;animation-delay:1.5s;'
-        ];
-        
-        let styleIndex = 0;
-        for (let i = 1; i <= 7; i++) {
-          if (sf[`heroFloat${i}`]) {
-            const img = document.createElement('img');
-            img.src = '/' + sf[`heroFloat${i}`];
-            img.className = 'float-item';
-            img.style.cssText = styles[styleIndex] + ' object-fit:contain; border-radius:50%; box-shadow:0 8px 16px rgba(0,0,0,0.1);';
-            floatContainer.appendChild(img);
-            styleIndex++;
-          }
-        }
-      }
-
-      const cimg1 = document.getElementById('craving-img-1');
-      const cimg2 = document.getElementById('craving-img-2');
-      const cimg3 = document.getElementById('craving-img-3');
-      const cimgMain = document.getElementById('craving-img-main');
-      if (cimg1 && sf.cravingImg1) cimg1.src = '/' + sf.cravingImg1;
-      if (cimg2 && sf.cravingImg2) cimg2.src = '/' + sf.cravingImg2;
-      if (cimg3 && sf.cravingImg3) cimg3.src = '/' + sf.cravingImg3;
-      if (cimgMain && sf.cravingImgMain) cimgMain.src = '/' + sf.cravingImgMain;
-    }
-  } catch (err) {
-    console.error('Failed to load storefront:', err);
-  }
-}
 
 document.addEventListener("DOMContentLoaded", async () => {
   initMobileNav();
