@@ -131,17 +131,7 @@ app.get('*', (req, res, next) => {
 app.use(errorHandler);
 
 /* ---------- Export app / Start server ---------- */
-if (process.env.VERCEL) {
-  // On Vercel serverless, lazily ensure DB connection on incoming requests
-  app.use(async (req, res, next) => {
-    try {
-      await connectDB();
-      next();
-    } catch (err) {
-      next(err);
-    }
-  });
-} else {
+if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 3000;
   const startServer = async () => {
     await connectDB();
