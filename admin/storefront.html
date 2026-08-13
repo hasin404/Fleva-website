@@ -164,53 +164,63 @@
   let allProducts = [];
 
   async function loadProductsDropdown() {
+    let products = [];
+
+    // 1. Try admin fetch
     try {
-      let products = [];
-      try {
-        const res = await adminFetch(`${API_BASE}/products?limit=100&admin=true`);
+      const res = await adminFetch(`${API_BASE}/products?limit=100&admin=true`);
+      if (res && res.ok) {
         const data = await res.json();
-        if (data.products && data.products.length > 0) {
+        if (data && data.products && Array.isArray(data.products) && data.products.length > 0) {
           products = data.products;
         }
-      } catch (e) {
-        console.warn('adminFetch products failed, trying public endpoint:', e);
       }
+    } catch (e) {
+      console.warn('adminFetch products failed:', e);
+    }
 
-      if (products.length === 0) {
-        const res = await fetch(`${API_BASE}/products?limit=100`).catch(() => null);
+    // 2. Try public fetch if admin fetch returned no products
+    if (!products || products.length === 0) {
+      try {
+        const res = await fetch(`${API_BASE}/products?limit=100`);
         if (res && res.ok) {
           const data = await res.json();
-          if (data.products && data.products.length > 0) {
+          if (data && data.products && Array.isArray(data.products) && data.products.length > 0) {
             products = data.products;
           }
         }
+      } catch (e) {
+        console.warn('public fetch products failed:', e);
       }
-
-      if (products.length === 0) {
-        products = [
-          { _id: '6a74b2280bf3887ea7db4ce2', title: 'Protein Bar — Chocolate Nut Crunch', price: 350 },
-          { _id: '6a74b2280bf3887ea7db4ce8', title: 'Freeze-Dried Strawberries', price: 280 },
-          { _id: '6a74b2280bf3887ea7db4cee', title: 'Tropical Fruit Chips', price: 250 },
-          { _id: '6a74b2280bf3887ea7db4ceb', title: 'Chocolate-Dipped Fruit Mix', price: 320 },
-          { _id: '6a75bcaff6ded8c5bdc7a5b6', title: 'Felva powder', price: 400 },
-          { _id: '6a74b2280bf3887ea7db4cf4', title: 'Gift box', price: 950 },
-          { _id: '6a74b2280bf3887ea7db4cf1', title: 'Berry Power Powder', price: 450 }
-        ];
-      }
-
-      allProducts = products;
-
-      const optionsHtml = `<option value="">-- Select Product --</option>` + 
-        products.map(p => `<option value="${p._id || p.id}">${p.title || p.name} (৳${p.price})</option>`).join('');
-
-      ['craving-energy', 'craving-fruity', 'craving-guiltfree', 'craving-surprise'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = optionsHtml;
-      });
-      document.querySelectorAll('.cravings-select').forEach(sel => sel.innerHTML = optionsHtml);
-    } catch(err) {
-      console.error('Failed to load products for dropdowns', err);
     }
+
+    // 3. Fallback to default catalog if needed
+    if (!products || products.length === 0) {
+      products = [
+        { _id: '6a74b2280bf3887ea7db4ce2', title: 'Protein Bar — Chocolate Nut Crunch', price: 350 },
+        { _id: '6a74b2280bf3887ea7db4ce8', title: 'Freeze-Dried Strawberries', price: 280 },
+        { _id: '6a74b2280bf3887ea7db4cee', title: 'Tropical Fruit Chips', price: 250 },
+        { _id: '6a74b2280bf3887ea7db4ceb', title: 'Chocolate-Dipped Fruit Mix', price: 320 },
+        { _id: '6a75bcaff6ded8c5bdc7a5b6', title: 'Felva powder', price: 400 },
+        { _id: '6a74b2280bf3887ea7db4cf4', title: 'Gift box', price: 950 },
+        { _id: '6a74b2280bf3887ea7db4cf1', title: 'Berry Power Powder', price: 450 }
+      ];
+    }
+
+    allProducts = products;
+
+    const optionsHtml = `<option value="">-- Select Product --</option>` + 
+      products.map(p => {
+        const id = p._id || p.id;
+        const name = p.title || p.name || 'Product';
+        const price = p.price !== undefined ? ` (৳${p.price})` : '';
+        return `<option value="${id}">${name}${price}</option>`;
+      }).join('');
+
+    ['craving-energy', 'craving-fruity', 'craving-guiltfree', 'craving-surprise'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = optionsHtml;
+    });
   }
 
   async function loadStorefront() {
