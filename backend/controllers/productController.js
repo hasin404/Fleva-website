@@ -134,6 +134,16 @@ exports.createProduct = async (req, res, next) => {
       productData.tags = req.body.tags.split(',').map(t => t.trim()).filter(Boolean);
     }
     
+    // Clean empty SKU to prevent duplicate key error in MongoDB sparse index
+    if (!productData.sku || !productData.sku.trim()) {
+      delete productData.sku;
+    }
+
+    // Default description if omitted
+    if (!productData.description || !productData.description.trim()) {
+      productData.description = productData.title || 'FLEVA delicious product';
+    }
+
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer);
       productData.images = [{ url: result.secure_url, publicId: result.public_id }];
@@ -141,16 +151,18 @@ exports.createProduct = async (req, res, next) => {
 
     const product = await Product.create(productData);
 
-    // Log initial inventory
-    await Inventory.create({
-      product: product._id,
-      changeType: 'initial',
-      quantityChange: product.stock,
-      previousStock: 0,
-      newStock: product.stock,
-      reference: 'Product created',
-      updatedBy: req.user._id,
-    });
+    // Log initial inventory safely
+    if (req.user) {
+      await Inventory.create({
+        product: product._id,
+        changeType: 'initial',
+        quantityChange: product.stock || 0,
+        previousStock: 0,
+        newStock: product.stock || 0,
+        reference: 'Product created',
+        updatedBy: req.user._id,
+      }).catch(() => {});
+    }
 
     res.status(201).json({ success: true, product });
   } catch (err) {
@@ -173,11 +185,20 @@ exports.updateProduct = async (req, res, next) => {
       productData.tags = req.body.tags.split(',').map(t => t.trim()).filter(Boolean);
     }
 
+    // Clean empty SKU to prevent duplicate key error
+    if (!productData.sku || !productData.sku.trim()) {
+      delete productData.sku;
+    }
+
+    // Default description if omitted
+    if (!productData.description || !productData.description.trim()) {
+      productData.description = oldProduct.description || productData.title || 'FLEVA delicious product';
+    }
+
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer);
       productData.images = [{ url: result.secure_url, publicId: result.public_id }];
       
-      // Optionally delete old image from cloudinary here if oldProduct.images[0].publicId exists
       if (oldProduct.images && oldProduct.images[0] && oldProduct.images[0].publicId) {
         await cloudinary.uploader.destroy(oldProduct.images[0].publicId).catch(() => {});
       }
@@ -188,8 +209,8 @@ exports.updateProduct = async (req, res, next) => {
       runValidators: true,
     });
 
-    // Log stock changes
-    if (req.body.stock !== undefined && req.body.stock !== oldProduct.stock) {
+    // Log stock changes safely
+    if (req.body.stock !== undefined && req.body.stock !== oldProduct.stock && req.user) {
       await Inventory.create({
         product: product._id,
         changeType: 'adjustment',
@@ -198,7 +219,7 @@ exports.updateProduct = async (req, res, next) => {
         newStock: req.body.stock,
         reference: 'Manual adjustment',
         updatedBy: req.user._id,
-      });
+      }).catch(() => {});
     }
 
     res.json({ success: true, product });
