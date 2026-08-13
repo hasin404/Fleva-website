@@ -80,9 +80,25 @@ exports.signup = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
+    const mongoose = require('mongoose');
+
+    // Ensure DB connection is active
+    if (mongoose.connection.readyState !== 1) {
+      try {
+        const connectDB = require('../config/db');
+        await connectDB();
+      } catch (e) {
+        console.error('Login DB connection error:', e.message);
+      }
+    }
 
     // Find user with password field
-    let user = await User.findOne({ email }).select('+password');
+    let user = null;
+    try {
+      user = await User.findOne({ email }).select('+password');
+    } catch (e) {
+      console.error('User findOne error:', e.message);
+    }
     
     // Auto-create default admin user in Atlas if missing
     if (!user && email && email.toLowerCase().trim() === 'admin@fleva.com') {
