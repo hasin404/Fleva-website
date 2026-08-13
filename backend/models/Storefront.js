@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+require('./Product');
 
 const StorefrontSchema = new mongoose.Schema({
   globalId: { type: String, default: 'main', unique: true },
