@@ -202,9 +202,9 @@
   async function loadProductsDropdown() {
     let products = [];
 
-    // 1. Try admin fetch
+    // 1. Try admin fetch with cache-busting
     try {
-      const res = await adminFetch(`${API_BASE}/products?limit=100&admin=true`);
+      const res = await adminFetch(`${API_BASE}/products?limit=500&admin=true&t=${Date.now()}`);
       if (res && res.ok) {
         const data = await res.json();
         if (data && data.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -218,7 +218,7 @@
     // 2. Try public fetch if admin fetch returned no products
     if (!products || products.length === 0) {
       try {
-        const res = await fetch(`${API_BASE}/products?limit=100`);
+        const res = await fetch(`${API_BASE}/products?limit=500&t=${Date.now()}`);
         if (res && res.ok) {
           const data = await res.json();
           if (data && data.products && Array.isArray(data.products) && data.products.length > 0) {
@@ -255,14 +255,18 @@
 
     ['craving-energy', 'craving-fruity', 'craving-guiltfree', 'craving-surprise'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.innerHTML = optionsHtml;
+      if (el) {
+        const currVal = el.value;
+        el.innerHTML = optionsHtml;
+        if (currVal) el.value = currVal;
+      }
     });
   }
 
   async function loadStorefront() {
     try { await loadProductsDropdown(); } catch (e) {}
     try {
-      const res = await adminFetch(`${API_BASE}/storefront`);
+      const res = await adminFetch(`${API_BASE}/storefront?t=${Date.now()}`);
       const data = await res.json();
       if (data.success && data.storefront) {
         document.getElementById('hero-title').value = data.storefront.heroTitle || 'Real fruits.<br>Crazy good.<span class="stroke">Fleva.</span>';
@@ -419,10 +423,10 @@
       const res = await adminFetch(`${API_BASE}/storefront`, {
         method: 'PUT',
         body: formData,
-        // Don't set Content-Type header for FormData, browser sets it with boundary
       });
 
-      if (data.success) {
+      const data = await res.json();
+      if (data && data.success) {
         alert('Storefront updated successfully!');
         try {
           await loadStorefront();
@@ -430,7 +434,7 @@
           console.warn('Post-save storefront reload warning:', reloadErr);
         }
       } else {
-        alert(data.message || 'Error updating storefront');
+        alert((data && data.message) || 'Error updating storefront');
       }
     } catch (err) {
       console.error('Save storefront error:', err);
