@@ -50,12 +50,10 @@ app.use(cors({
 
 // Automatic DB connection middleware for serverless API routes
 app.use(async (req, res, next) => {
-  if (req.path.startsWith('/api')) {
-    try {
-      await connectDB();
-    } catch (err) {
-      return res.status(500).json({ success: false, message: 'Database connection error: ' + err.message });
-    }
+  try {
+    await connectDB();
+  } catch (err) {
+    console.warn('Database connection warning (continuing request):', err.message);
   }
   next();
 });
