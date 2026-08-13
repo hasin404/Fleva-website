@@ -13,15 +13,37 @@ const fs = require('fs');
 const uploadToCloudinary = (buffer, folder = 'fleva-products') => {
   return new Promise((resolve, reject) => {
     try {
+      if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        const b64 = buffer.toString('base64');
+        const mime = 'image/png';
+        return resolve({
+          secure_url: `data:${mime};base64,${b64}`,
+          public_id: `upload-${Date.now()}`
+        });
+      }
+
       const filename = `upload-${Date.now()}-${Math.round(Math.random() * 1E9)}.png`;
       const filepath = path.join(__dirname, '..', '..', 'assets', 'uploads', filename);
+      
+      const dir = path.join(__dirname, '..', '..', 'assets', 'uploads');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
       fs.writeFileSync(filepath, buffer);
       resolve({
         secure_url: `/assets/uploads/${filename}`,
         public_id: filename
       });
     } catch (err) {
-      reject(err);
+      // Fallback
+      try {
+        const b64 = buffer.toString('base64');
+        return resolve({
+          secure_url: `data:image/png;base64,${b64}`,
+          public_id: `upload-${Date.now()}`
+        });
+      } catch (e) {
+        reject(err);
+      }
     }
   });
 };
