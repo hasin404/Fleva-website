@@ -53,17 +53,23 @@ exports.getStorefront = async (req, res, next) => {
     }
 
     if (needsSave) {
-      await storefront.save();
-      storefront = await Storefront.findOne({ globalId: 'main' })
-        .populate('cravings.energy')
-        .populate('cravings.fruity')
-        .populate('cravings.guiltFree')
-        .populate('cravings.surprise');
+      try { await storefront.save(); } catch(e) {}
     }
 
     res.status(200).json({ success: true, storefront });
   } catch (err) {
-    next(err);
+    console.error('getStorefront error:', err);
+    res.status(200).json({
+      success: true,
+      storefront: {
+        globalId: 'main',
+        heroTitle: DEFAULT_HERO_TITLE,
+        heroSubtitle: DEFAULT_HERO_SUBTITLE,
+        heroBtnText: DEFAULT_HERO_BTN_TEXT,
+        heroBtnLink: DEFAULT_HERO_BTN_LINK,
+        cravings: {}
+      }
+    });
   }
 };
 
