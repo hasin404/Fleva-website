@@ -236,28 +236,53 @@ async function loadStorefront() {
 
 function setupCravingClickHandlers(cravingsMapping) {
   const buttons = document.querySelectorAll('#craving-choices button');
+  const ctaBtn = document.querySelector('.craving-cta');
   if (!buttons.length) return;
 
   const keyMap = {
     'energy': 'energy',
     'fruity': 'fruity',
     'guilt-free': 'guiltFree',
-    'surprise': 'surpriseMe'
+    'guiltFree': 'guiltFree',
+    'surprise': 'surprise'
   };
 
-  buttons.forEach(btn => {
-    btn.onclick = () => {
-      const type = btn.getAttribute('data-craving');
-      const mappedKey = keyMap[type];
-      if (cravingsMapping && cravingsMapping[mappedKey]) {
-        const prod = cravingsMapping[mappedKey];
-        const prodId = typeof prod === 'object' ? (prod.slug || prod._id) : prod;
-        if (prodId) {
-          window.location.href = `product-detail.html?id=${prodId}`;
-          return;
-        }
+  function updateCravingsUI(selectedBtn) {
+    buttons.forEach(b => b.classList.remove('picked'));
+    selectedBtn.classList.add('picked');
+
+    const type = selectedBtn.getAttribute('data-craving');
+    const mappedKey = keyMap[type];
+    let targetProduct = null;
+
+    if (cravingsMapping && cravingsMapping[mappedKey]) {
+      targetProduct = cravingsMapping[mappedKey];
+    }
+
+    if (targetProduct) {
+      const prodId = typeof targetProduct === 'object' ? (targetProduct.slug || targetProduct._id) : targetProduct;
+      if (prodId) {
+        if (ctaBtn) ctaBtn.href = `product.html?id=${prodId}`;
+        return prodId;
       }
-      window.location.href = 'shop.html';
+    }
+    if (ctaBtn) ctaBtn.href = 'shop.html';
+    return null;
+  }
+
+  // Set default initial state
+  const initialPicked = document.querySelector('#craving-choices button.picked') || buttons[0];
+  if (initialPicked) updateCravingsUI(initialPicked);
+
+  buttons.forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      const prodId = updateCravingsUI(btn);
+      if (prodId) {
+        window.location.href = `product.html?id=${prodId}`;
+      } else {
+        window.location.href = 'shop.html';
+      }
     };
   });
 }

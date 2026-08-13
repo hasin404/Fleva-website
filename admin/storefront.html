@@ -121,54 +121,7 @@
         </div>
       </div>
 
-      <div class="form-section">
-        <h3>Hero Floating Images (Up to 7)</h3>
-        <p style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 20px;">Upload small fruit images to float in the hero section. Empty slots will not be shown.</p>
-        <div class="form-row">
-          <div class="field">
-            <label>Float Image 1</label>
-            <input type="file" name="heroFloat1" accept="image/*" onchange="previewImage(this, 'preview-hf-1')">
-            <div class="img-preview"><img id="preview-hf-1" src="" alt="Preview 1"></div>
-          </div>
-          <div class="field">
-            <label>Float Image 2</label>
-            <input type="file" name="heroFloat2" accept="image/*" onchange="previewImage(this, 'preview-hf-2')">
-            <div class="img-preview"><img id="preview-hf-2" src="" alt="Preview 2"></div>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="field">
-            <label>Float Image 3</label>
-            <input type="file" name="heroFloat3" accept="image/*" onchange="previewImage(this, 'preview-hf-3')">
-            <div class="img-preview"><img id="preview-hf-3" src="" alt="Preview 3"></div>
-          </div>
-          <div class="field">
-            <label>Float Image 4</label>
-            <input type="file" name="heroFloat4" accept="image/*" onchange="previewImage(this, 'preview-hf-4')">
-            <div class="img-preview"><img id="preview-hf-4" src="" alt="Preview 4"></div>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="field">
-            <label>Float Image 5</label>
-            <input type="file" name="heroFloat5" accept="image/*" onchange="previewImage(this, 'preview-hf-5')">
-            <div class="img-preview"><img id="preview-hf-5" src="" alt="Preview 5"></div>
-          </div>
-          <div class="field">
-            <label>Float Image 6</label>
-            <input type="file" name="heroFloat6" accept="image/*" onchange="previewImage(this, 'preview-hf-6')">
-            <div class="img-preview"><img id="preview-hf-6" src="" alt="Preview 6"></div>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="field">
-            <label>Float Image 7</label>
-            <input type="file" name="heroFloat7" accept="image/*" onchange="previewImage(this, 'preview-hf-7')">
-            <div class="img-preview"><img id="preview-hf-7" src="" alt="Preview 7"></div>
-          </div>
-          <div></div>
-        </div>
-      </div>
+
 
       <div class="form-section">
         <h3>Cravings Section (Product Mapping)</h3>
@@ -281,12 +234,6 @@
         if (data.storefront.cravingImg2) document.getElementById('preview-craving-2').src = formatImg(data.storefront.cravingImg2);
         if (data.storefront.cravingImg3) document.getElementById('preview-craving-3').src = formatImg(data.storefront.cravingImg3);
         if (data.storefront.cravingImgMain) document.getElementById('preview-craving-main').src = formatImg(data.storefront.cravingImgMain);
-
-        for (let i = 1; i <= 7; i++) {
-          if (data.storefront[`heroFloat${i}`]) {
-            document.getElementById(`preview-hf-${i}`).src = formatImg(data.storefront[`heroFloat${i}`]);
-          }
-        }
 
         if (data.storefront.cravings) {
           const c = data.storefront.cravings;
@@ -409,14 +356,10 @@
       if (ci3) formData.append('cravingImg3', ci3);
       if (ciMain) formData.append('cravingImgMain', ciMain);
 
-      for (let i = 1; i <= 7; i++) {
-        const hf = await getFile(`input[name="heroFloat${i}"]`);
-        if (hf) formData.append(`heroFloat${i}`, hf);
-      }
-
       const getVal = (id) => {
-        const val = document.getElementById(id).value;
-        return (val && val !== 'undefined') ? val : null;
+        const el = document.getElementById(id);
+        const val = el ? el.value : '';
+        return (val && val !== 'undefined' && val !== 'null') ? val : null;
       };
 
       const cravings = {
