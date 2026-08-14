@@ -136,6 +136,12 @@ exports.updateStorefront = async (req, res, next) => {
       } catch(e){}
     }
 
+    if (data.cravingLabels && typeof data.cravingLabels === 'string') {
+      try { 
+        data.cravingLabels = JSON.parse(data.cravingLabels); 
+      } catch(e){}
+    }
+
     storefront = await Storefront.findOneAndUpdate(
       { globalId: 'main' },
       data,

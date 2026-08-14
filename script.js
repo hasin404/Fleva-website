@@ -203,6 +203,14 @@ async function loadStorefront() {
           if (c2 && STOREFRONT.cravingImg2) c2.src = formatUrl(STOREFRONT.cravingImg2);
           if (c3 && STOREFRONT.cravingImg3) c3.src = formatUrl(STOREFRONT.cravingImg3);
           if (cMain && STOREFRONT.cravingImgMain) cMain.src = formatUrl(STOREFRONT.cravingImgMain);
+        // Craving Button Labels
+        if (STOREFRONT.cravingLabels) {
+          const cl = STOREFRONT.cravingLabels;
+          const buttons = document.querySelectorAll('#craving-choices button');
+          if (buttons[0] && cl.energy) buttons[0].textContent = cl.energy;
+          if (buttons[1] && cl.fruity) buttons[1].textContent = cl.fruity;
+          if (buttons[2] && cl.guiltFree) buttons[2].textContent = cl.guiltFree;
+          if (buttons[3] && cl.surprise) buttons[3].textContent = cl.surprise;
         }
 
         // Craving click handlers

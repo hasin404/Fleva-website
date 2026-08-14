@@ -30,6 +30,12 @@ const StorefrontSchema = new mongoose.Schema({
     guiltFree: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
     surprise: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' }
   },
+  cravingLabels: {
+    energy: { type: String, default: 'I want energy ⚡' },
+    fruity: { type: String, default: 'I want something fruity 🍓' },
+    guiltFree: { type: String, default: 'I want guilt-free snacks 😊' },
+    surprise: { type: String, default: 'Surprise me 🎲' }
+  },
   heroFloat1: { type: String, default: '' },
   heroFloat2: { type: String, default: '' },
   heroFloat3: { type: String, default: '' },

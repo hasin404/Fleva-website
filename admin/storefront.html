@@ -124,11 +124,13 @@
 
 
       <div class="form-section">
-        <h3>Cravings Section (Product Mapping)</h3>
-        <p style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 20px;">Select a product to display when a customer clicks a specific craving button.</p>
+        <h3>Cravings Section (Button Texts & Product Mapping)</h3>
+        <p style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 20px;">Customize the label text for each craving button and select which product to show when clicked.</p>
         <div class="form-row">
           <div class="field">
-            <label>I want energy ⚡</label>
+            <label>Craving Button 1 Label</label>
+            <input type="text" id="craving-label-energy" placeholder="I want energy ⚡" value="I want energy ⚡">
+            <label style="margin-top: 10px;">Mapped Product</label>
             <select id="craving-energy" class="cravings-select">
               <option value="">-- Select Product --</option>
               <option value="6a74b2280bf3887ea7db4ce2">Protein Bar — Chocolate Nut Crunch (৳350)</option>
@@ -141,7 +143,9 @@
             </select>
           </div>
           <div class="field">
-            <label>I want something fruity 🍓</label>
+            <label>Craving Button 2 Label</label>
+            <input type="text" id="craving-label-fruity" placeholder="I want something fruity 🍓" value="I want something fruity 🍓">
+            <label style="margin-top: 10px;">Mapped Product</label>
             <select id="craving-fruity" class="cravings-select">
               <option value="">-- Select Product --</option>
               <option value="6a74b2280bf3887ea7db4ce2">Protein Bar — Chocolate Nut Crunch (৳350)</option>
@@ -156,7 +160,9 @@
         </div>
         <div class="form-row">
           <div class="field">
-            <label>I want guilt-free snacks 😊</label>
+            <label>Craving Button 3 Label</label>
+            <input type="text" id="craving-label-guiltfree" placeholder="I want guilt-free snacks 😊" value="I want guilt-free snacks 😊">
+            <label style="margin-top: 10px;">Mapped Product</label>
             <select id="craving-guiltfree" class="cravings-select">
               <option value="">-- Select Product --</option>
               <option value="6a74b2280bf3887ea7db4ce2">Protein Bar — Chocolate Nut Crunch (৳350)</option>
@@ -169,7 +175,9 @@
             </select>
           </div>
           <div class="field">
-            <label>Surprise me 🎲</label>
+            <label>Craving Button 4 Label</label>
+            <input type="text" id="craving-label-surprise" placeholder="Surprise me 🎲" value="Surprise me 🎲">
+            <label style="margin-top: 10px;">Mapped Product</label>
             <select id="craving-surprise" class="cravings-select">
               <option value="">-- Select Product --</option>
               <option value="6a74b2280bf3887ea7db4ce2">Protein Bar — Chocolate Nut Crunch (৳350)</option>
@@ -310,6 +318,14 @@
           setVal('craving-guiltfree', getId(c.guiltFree));
           setVal('craving-surprise', getId(c.surprise));
         }
+
+        if (data.storefront.cravingLabels) {
+          const cl = data.storefront.cravingLabels;
+          if (cl.energy) document.getElementById('craving-label-energy').value = cl.energy;
+          if (cl.fruity) document.getElementById('craving-label-fruity').value = cl.fruity;
+          if (cl.guiltFree) document.getElementById('craving-label-guiltfree').value = cl.guiltFree;
+          if (cl.surprise) document.getElementById('craving-label-surprise').value = cl.surprise;
+        }
       }
     } catch (err) {
       console.error(err);
@@ -430,6 +446,14 @@
         surprise: getVal('craving-surprise')
       };
       formData.append('cravings', JSON.stringify(cravings));
+
+      const cravingLabels = {
+        energy: document.getElementById('craving-label-energy').value || 'I want energy ⚡',
+        fruity: document.getElementById('craving-label-fruity').value || 'I want something fruity 🍓',
+        guiltFree: document.getElementById('craving-label-guiltfree').value || 'I want guilt-free snacks 😊',
+        surprise: document.getElementById('craving-label-surprise').value || 'Surprise me 🎲'
+      };
+      formData.append('cravingLabels', JSON.stringify(cravingLabels));
 
       const res = await adminFetch(`${API_BASE}/storefront`, {
         method: 'PUT',
