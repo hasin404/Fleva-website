@@ -224,6 +224,7 @@ async function loadStorefront() {
 
         // Craving click handlers
         setupCravingClickHandlers(STOREFRONT.cravings);
+      }
     }
   } catch (e) {
     console.warn('Storefront API load failed', e);
