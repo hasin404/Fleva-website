@@ -67,7 +67,16 @@
       </div>
       <div class="field"><label>Product Image</label><input type="file" id="p-image" accept="image/*" style="border:2px solid var(--line); border-radius:var(--radius-sm); padding:6px; background:var(--white);"></div>
       <div class="form-row">
-        <div class="field"><label>Category</label><input id="p-category"></div>
+        <div class="field"><label>Category</label><input id="p-category" list="category-suggestions" placeholder="e.g. Fruit Chips">
+          <datalist id="category-suggestions">
+            <option value="Fruit Chips">
+            <option value="Protein Bars">
+            <option value="Freeze-Dried Fruits">
+            <option value="Chocolate Fruits">
+            <option value="Fruit Powders">
+            <option value="Gift Boxes">
+          </datalist>
+        </div>
         <div class="field"><label>Brand</label><input id="p-brand" value="FLEVA"></div>
       </div>
       <div class="form-row">
