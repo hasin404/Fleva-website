@@ -249,7 +249,11 @@ function setupCravingClickHandlers(cravingsMapping) {
   }
 
   function getProductObj(target) {
-    if (!target) return null;
+    if (!target) {
+      if (window.PRODUCTS && window.PRODUCTS.length) return PRODUCTS[0];
+      if (typeof STATIC_PRODUCTS !== 'undefined' && STATIC_PRODUCTS.length) return STATIC_PRODUCTS[0];
+      return null;
+    }
     let targetId = typeof target === 'object' ? (target.slug || target._id || target.id) : target;
     
     // 1. If target is already a full product object
@@ -306,7 +310,7 @@ function setupCravingClickHandlers(cravingsMapping) {
     selectedBtn.classList.add('picked');
 
     const type = selectedBtn.getAttribute('data-craving');
-    const mappedKey = keyMap[type];
+    const mappedKey = keyMap[type] || type;
     let rawProduct = cravingsMapping ? cravingsMapping[mappedKey] : null;
     let productObj = getProductObj(rawProduct);
 
@@ -320,23 +324,15 @@ function setupCravingClickHandlers(cravingsMapping) {
     }
   }
 
-  // Select 1st option by default
-  const initialPicked = document.querySelector('#craving-choices button.picked') || buttons[0];
-  if (initialPicked) {
-    selectCraving(initialPicked);
-  } else {
-    showDefaultView();
-  }
-
   if (titleBtn) {
     titleBtn.onclick = () => showDefaultView();
   }
 
   buttons.forEach(btn => {
-    btn.onclick = (e) => {
+    btn.addEventListener('click', (e) => {
       e.preventDefault();
       selectCraving(btn);
-    };
+    });
   });
 }
 

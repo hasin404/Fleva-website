@@ -51,7 +51,11 @@ exports.getStorefront = async (req, res, next) => {
       if (!storefront.cravings.fruity && products[1]) { storefront.cravings.fruity = products[1]._id; needsSave = true; }
       if (!storefront.cravings.guiltFree && products[2]) { storefront.cravings.guiltFree = products[2]._id; needsSave = true; }
       if (!storefront.cravings.surprise && products[3]) { storefront.cravings.surprise = products[3]._id; needsSave = true; }
-    }
+    if (!storefront.cravingLabels) storefront.cravingLabels = {};
+    if (!storefront.cravingLabels.energy) { storefront.cravingLabels.energy = 'I want energy ⚡'; needsSave = true; }
+    if (!storefront.cravingLabels.fruity) { storefront.cravingLabels.fruity = 'I want something fruity 🍓'; needsSave = true; }
+    if (!storefront.cravingLabels.guiltFree) { storefront.cravingLabels.guiltFree = 'I want guilt-free snacks 😊'; needsSave = true; }
+    if (!storefront.cravingLabels.surprise) { storefront.cravingLabels.surprise = 'Surprise me 🎲'; needsSave = true; }
 
     if (needsSave) {
       try { await storefront.save(); } catch(e) {}
