@@ -363,27 +363,32 @@ async function loadProducts() {
     if (res.ok) {
       const data = await res.json();
       if (data.products && data.products.length > 0) {
-        // Map API products to frontend format
         const formatUrl = (s) => (!s ? '' : (s.startsWith('data:') || s.startsWith('http') || s.startsWith('/')) ? s : `/${s}`);
-        PRODUCTS = data.products.map(p => ({
-          id: p.slug || p._id,
-          _id: p._id,
-          slug: p.slug || p._id,
-          name: p.title,
-          category: p.categoryName || '',
-          price: p.price,
-          discountPrice: p.discountPrice || 0,
-          tag: p.tag || '',
-          color: p.color || '#16140F',
-          accent: p.accent || 'var(--lime)',
-          image: formatUrl(p.images?.[0]?.url || ''),
-          desc: p.description || '',
-          stock: p.stock,
-          availability: p.availability || 'in-stock',
-          advancePaymentPercentage: p.advancePaymentPercentage,
-          rating: p.rating || 0,
-          numReviews: p.numReviews || 0,
-        }));
+        PRODUCTS = data.products.map(p => {
+          const match = STATIC_PRODUCTS.find(sp => sp.id === p.slug || sp.id === p._id || sp.name === p.title);
+          const cat = (p.categoryName && p.categoryName.trim()) ? p.categoryName : (match ? match.category : 'FLEVA Snacks');
+          let img = p.images?.[0]?.url || p.image || (match ? match.image : '');
+
+          return {
+            id: p.slug || p._id,
+            _id: p._id,
+            slug: p.slug || p._id,
+            name: p.title || p.name || (match ? match.name : 'FLEVA Snack'),
+            category: cat,
+            price: p.price || (match ? match.price : 350),
+            discountPrice: p.discountPrice || 0,
+            tag: p.tag || (match ? match.tag : ''),
+            color: p.color || (match ? match.color : '#16140F'),
+            accent: p.accent || (match ? match.accent : 'var(--lime)'),
+            image: formatUrl(img || (match ? match.image : '/assets/products/protein-bars.png')),
+            desc: p.description || p.desc || (match ? match.desc : ''),
+            stock: p.stock !== undefined ? p.stock : 50,
+            availability: p.availability || 'in-stock',
+            advancePaymentPercentage: p.advancePaymentPercentage || 20,
+            rating: p.rating || 0,
+            numReviews: p.numReviews || 0,
+          };
+        });
         window.PRODUCTS = PRODUCTS;
         window.dispatchEvent(new CustomEvent('products-loaded'));
         document.dispatchEvent(new CustomEvent('products-loaded'));
