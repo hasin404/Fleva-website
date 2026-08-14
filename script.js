@@ -149,6 +149,9 @@ const STATIC_PRODUCTS = [
   },
 ];
 
+let PRODUCTS = [...STATIC_PRODUCTS];
+window.PRODUCTS = PRODUCTS;
+
 /* ---- Storefront dynamic settings from API ---- */
 let STOREFRONT = null;
 let STOREFRONT_CONFIG = null;
@@ -381,6 +384,9 @@ async function loadProducts() {
           rating: p.rating || 0,
           numReviews: p.numReviews || 0,
         }));
+        window.PRODUCTS = PRODUCTS;
+        window.dispatchEvent(new CustomEvent('products-loaded'));
+        document.dispatchEvent(new CustomEvent('products-loaded'));
         return;
       }
     }
@@ -388,6 +394,9 @@ async function loadProducts() {
     // Fallback to static
   }
   PRODUCTS = [...STATIC_PRODUCTS];
+  window.PRODUCTS = PRODUCTS;
+  window.dispatchEvent(new CustomEvent('products-loaded'));
+  document.dispatchEvent(new CustomEvent('products-loaded'));
 }
 
 async function loadBanners() {
@@ -793,14 +802,18 @@ function initHero3DCarousel() {
   startAutoPlay();
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function initApp() {
   initHero3DCarousel();
-  await loadStorefront();
   await loadProducts();
+  await loadStorefront();
   await loadBanners();
-  window.dispatchEvent(new CustomEvent('products-loaded'));
-  document.dispatchEvent(new CustomEvent('products-loaded'));
   if (typeof initShop === 'function') initShop();
   if (typeof renderFeatured === 'function') renderFeatured();
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initApp);
+} else {
+  initApp();
+}
 
