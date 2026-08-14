@@ -345,6 +345,7 @@ input,select,textarea{ font-family:inherit; font-size:1rem; }
   align-items: center;
   justify-content: center;
   animation: floatSlow 6s ease-in-out infinite;
+  background: transparent !important;
 }
 
 .carousel-3d-card img {
@@ -353,6 +354,7 @@ input,select,textarea{ font-family:inherit; font-size:1rem; }
   object-fit: contain;
   filter: drop-shadow(0 25px 35px rgba(0,0,0,0.32));
   transition: transform 0.4s var(--ease);
+  background: transparent !important;
 }
 
 /* Position 1: Center Featured Stage */

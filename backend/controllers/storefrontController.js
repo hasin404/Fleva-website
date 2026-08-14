@@ -9,7 +9,8 @@ const saveFileLocally = (file) => {
       if (file) {
         const buf = file.buffer || (Buffer.isBuffer(file) ? file : Buffer.from(file));
         const b64 = buf.toString('base64');
-        const mime = file.mimetype || 'image/png';
+        const isPng = (file.mimetype && file.mimetype.includes('png')) || (file.originalname && file.originalname.toLowerCase().endsWith('.png'));
+        const mime = isPng ? 'image/png' : (file.mimetype || 'image/jpeg');
         return resolve({ secure_url: `data:${mime};base64,${b64}` });
       }
       resolve({ secure_url: '/assets/products/protein-bars.png' });
