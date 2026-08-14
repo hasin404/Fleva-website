@@ -203,19 +203,24 @@ async function loadStorefront() {
           if (c2 && STOREFRONT.cravingImg2) c2.src = formatUrl(STOREFRONT.cravingImg2);
           if (c3 && STOREFRONT.cravingImg3) c3.src = formatUrl(STOREFRONT.cravingImg3);
           if (cMain && STOREFRONT.cravingImgMain) cMain.src = formatUrl(STOREFRONT.cravingImgMain);
+        }
+
         // Craving Button Labels
         if (STOREFRONT.cravingLabels) {
           const cl = STOREFRONT.cravingLabels;
-          const buttons = document.querySelectorAll('#craving-choices button');
-          if (buttons[0] && cl.energy) buttons[0].textContent = cl.energy;
-          if (buttons[1] && cl.fruity) buttons[1].textContent = cl.fruity;
-          if (buttons[2] && cl.guiltFree) buttons[2].textContent = cl.guiltFree;
-          if (buttons[3] && cl.surprise) buttons[3].textContent = cl.surprise;
+          const btnEnergy = document.querySelector('#craving-choices button[data-craving="energy"]');
+          const btnFruity = document.querySelector('#craving-choices button[data-craving="fruity"]');
+          const btnGuiltFree = document.querySelector('#craving-choices button[data-craving="guilt-free"]');
+          const btnSurprise = document.querySelector('#craving-choices button[data-craving="surprise"]');
+
+          if (btnEnergy && cl.energy) btnEnergy.textContent = cl.energy;
+          if (btnFruity && cl.fruity) btnFruity.textContent = cl.fruity;
+          if (btnGuiltFree && cl.guiltFree) btnGuiltFree.textContent = cl.guiltFree;
+          if (btnSurprise && cl.surprise) btnSurprise.textContent = cl.surprise;
         }
 
         // Craving click handlers
         setupCravingClickHandlers(STOREFRONT.cravings);
-      }
     }
   } catch (e) {
     console.warn('Storefront API load failed', e);
